@@ -1,16 +1,15 @@
-// lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
-import type { Profile } from './types';
+import type { CaseStatus, CasePriority, Profile } from './types';
 
-const SUPABASE_URL  = 'https://efnpfmcgapcgqiouopsx.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmbnBmbWNnYXBjZ3Fpb3VvcHN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMDc5MzUsImV4cCI6MjA5MTU4MzkzNX0.Rm8QnxVVIXJzNW18JRX0tZlgfr6sJLpSbTqnzwirRmw';
+const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-export const STATUS_LABEL: Record<string, string> = {
+export const STATUS_LABEL: Record<CaseStatus, string> = {
   ny: 'Ny', open: 'Åpen', waiting: 'Venter', closed: 'Lukket'
 };
-export const PRIO_LABEL: Record<string, string> = {
+export const PRIO_LABEL: Record<CasePriority, string> = {
   low: 'Lav', normal: 'Normal', high: 'Høy', critical: 'Kritisk'
 };
 
@@ -27,8 +26,8 @@ export function formatDateTime(iso: string | null): string {
 }
 
 export async function getCurrentUser(): Promise<Profile | null> {
-  const { data: { session } } = await db.auth.getSession();
-  if (!session) return null;
-  const { data } = await db.from('profiles').select('*').eq('id', session.user.id).single();
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return null;
+  const { data } = await db.from('profiles').select('id, email, full_name, role').eq('id', user.id).single();
   return data as Profile | null;
 }
