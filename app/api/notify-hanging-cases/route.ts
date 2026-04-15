@@ -16,11 +16,6 @@ const db = createClient(
 );
 
 export async function GET() {
-  // Kjør kun på varseltidspunkt (06, 12, 18 norsk tid, hverdager)
-  if (!isNotificationTime()) {
-    return NextResponse.json({ skipped: true, reason: 'Not a notification time' });
-  }
-
   // Hent åpne saker som har passert SLA-fristen
   const now = new Date().toISOString();
   const { data: hangingCases, error } = await db
