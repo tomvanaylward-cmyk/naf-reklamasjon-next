@@ -13,7 +13,11 @@ export default function Navbar({ userName, isAdmin }: NavbarProps) {
   const router = useRouter();
 
   async function logout() {
-    await db.auth.signOut();
+    try {
+      await db.auth.signOut();
+    } catch {
+      // continue to login regardless
+    }
     router.push('/login');
   }
 
@@ -42,11 +46,11 @@ export default function Navbar({ userName, isAdmin }: NavbarProps) {
         ))}
       </div>
       <div className="flex items-center gap-2 text-white/75 text-sm ml-3 pl-3 border-l border-white/15">
-        <div className="w-[30px] h-[30px] rounded-full bg-white/20 flex items-center justify-center text-xs font-semibold text-white">
+        <div aria-hidden="true" className="w-[30px] h-[30px] rounded-full bg-white/20 flex items-center justify-center text-xs font-semibold text-white">
           {(userName || '?')[0].toUpperCase()}
         </div>
         <span>{userName}</span>
-        <button onClick={logout} className="text-white/50 text-xs px-2 py-1 rounded hover:bg-white/10 hover:text-white transition-colors cursor-pointer border-none bg-transparent font-[Sora]">
+        <button onClick={logout} className="text-white/50 text-xs px-2 py-1 rounded hover:bg-white/10 hover:text-white transition-colors cursor-pointer border-none bg-transparent">
           Logg ut
         </button>
       </div>
