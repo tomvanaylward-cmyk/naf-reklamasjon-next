@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
 import { createClient } from '@supabase/supabase-js';
-import { isNotificationTime } from '@/lib/sla';
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
