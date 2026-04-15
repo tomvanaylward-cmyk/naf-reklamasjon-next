@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function proxy(request: NextRequest) {
-  const token = request.cookies.get('sb-efnpfmcgapcgqiouopsx-auth-token');
-  const isAuth = !!token;
-  const isLoginPage = request.nextUrl.pathname === '/login';
-
-  if (!isAuth && !isLoginPage) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-  if (isAuth && isLoginPage) {
-    return NextResponse.redirect(new URL('/saksbehandling', request.url));
-  }
+// Auth is handled client-side via getCurrentUser() in each page.
+// Supabase JS v2 stores sessions in localStorage (not cookies), so
+// server-side session detection is not available without @supabase/ssr.
+export function proxy(_request: NextRequest) {
   return NextResponse.next();
 }
 
