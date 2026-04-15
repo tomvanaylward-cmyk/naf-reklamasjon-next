@@ -77,7 +77,7 @@ export default function SaksbehandlingPage() {
     if (next) openCase(next.id);
   }
 
-  async function updateField(field: string, value: string | null) {
+  async function updateField(field: keyof Case, value: string | null) {
     if (!activeCase) return;
     await db.from('cases').update({ [field]: value, updated_at: new Date().toISOString() }).eq('id', activeCase.id);
     setActiveCase(prev => prev ? { ...prev, [field]: value } : prev);
@@ -260,21 +260,21 @@ export default function SaksbehandlingPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[11.5px] font-mono text-gray-400">{activeCase.case_id}</span>
-                  <select value={activeCase.status} onChange={e => updateField('status', e.target.value)}
+                  <select aria-label="Status" value={activeCase.status} onChange={e => updateField('status', e.target.value)}
                     className="text-[12px] font-semibold border-[1.5px] border-gray-200 rounded-full px-3 py-1 cursor-pointer outline-none bg-white text-gray-700 hover:border-[#003087] transition-colors appearance-none">
                     <option value="ny">🔵 Ny</option>
                     <option value="open">🟡 Åpen</option>
                     <option value="waiting">🔷 Venter på kunde</option>
                     <option value="closed">🟢 Lukket</option>
                   </select>
-                  <select value={activeCase.priority || 'normal'} onChange={e => updateField('priority', e.target.value)}
+                  <select aria-label="Prioritet" value={activeCase.priority || 'normal'} onChange={e => updateField('priority', e.target.value)}
                     className="text-[12px] font-semibold border-[1.5px] border-gray-200 rounded-full px-3 py-1 cursor-pointer outline-none bg-white text-gray-700 hover:border-[#003087] transition-colors appearance-none">
                     <option value="low">▽ Lav</option>
                     <option value="normal">◇ Normal</option>
                     <option value="high">⚠ Høy</option>
                     <option value="critical">🔴 Kritisk</option>
                   </select>
-                  <select value={activeCase.assigned_to || ''} onChange={e => assignCase(e.target.value)}
+                  <select aria-label="Tildelt saksbehandler" value={activeCase.assigned_to || ''} onChange={e => assignCase(e.target.value)}
                     className="text-[12px] font-semibold border-[1.5px] border-gray-200 rounded-full px-3 py-1 cursor-pointer outline-none bg-white text-gray-700 hover:border-[#003087] transition-colors appearance-none">
                     <option value="">👤 Ikke tildelt</option>
                     {agents.map(a => (
