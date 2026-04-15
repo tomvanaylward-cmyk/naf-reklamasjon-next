@@ -93,7 +93,7 @@ export async function GET() {
 
   await sgMail.sendMultiple({
     to: NOTIFY_RECIPIENTS,
-    from: 'reklamasjon@naf.no',
+    from: 'tom.van.aylward@gmail.com',
     subject,
     html,
   });

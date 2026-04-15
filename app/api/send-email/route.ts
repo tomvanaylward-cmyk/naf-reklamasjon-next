@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     if (!subject) return NextResponse.json({ error: 'Ukjent e-posttype' }, { status: 400 });
 
-    await sgMail.send({ to, from: 'reklamasjon@naf.no', subject, html });
+    await sgMail.send({ to, from: 'tom.van.aylward@gmail.com', subject, html });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('SendGrid error:', err);
