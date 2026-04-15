@@ -10,6 +10,7 @@ import StatusBadge from '@/components/StatusBadge';
 import InfoRow from '@/components/InfoRow';
 import Timeline from '@/components/Timeline';
 import SLABox from '@/components/SLABox';
+import SLATicker from '@/components/SLATicker';
 
 const PRIO_COLORS: Record<string, string> = {
   high: '#EF4444', critical: '#7C2D12', normal: '#9CA3AF', low: '#10B981'
@@ -302,6 +303,9 @@ export default function SaksbehandlingPage() {
                   <div>
                     <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">SLA-frist</div>
                     <SLABox c={activeCase} />
+                    <div className="mt-2">
+                      <SLATicker c={activeCase} />
+                    </div>
                   </div>
 
                   {/* ML */}

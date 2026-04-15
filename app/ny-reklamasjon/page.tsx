@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { db } from '@/lib/supabase';
+import { calculateSLADeadline } from '@/lib/sla';
 
 const KATEGORIER = [
   'Dekkskifte',
@@ -66,7 +67,7 @@ export default function NyReklamasjonPage() {
     setError('');
 
     const id = generateCaseId();
-    const slaDeadline = new Date(Date.now() + 14 * 86400000).toISOString();
+    const slaDeadline = calculateSLADeadline(new Date().toISOString(), form.company || null);
 
     const { error: dbError } = await db.from('cases').insert({
       case_id:            id,

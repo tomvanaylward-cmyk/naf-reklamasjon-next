@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/notify-hanging-cases",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
