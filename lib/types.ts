@@ -46,6 +46,16 @@ export interface Profile {
   full_name: string | null;
   role: UserRole;
   senter: string | null;
+  phone: string | null;
+  status: 'active' | 'pending';
+}
+
+export interface PendingRegistration {
+  id: string;
+  full_name: string;
+  email: string;
+  senter: string;
+  created_at: string;
 }
 
 export interface Attachment {
