@@ -68,18 +68,14 @@ Alle admin-ruter bruker `SUPABASE_SERVICE_ROLE_KEY` og validerer at innlogget br
 
 Felter:
 - Fullt navn (påkrevd)
-- E-post (påkrevd, valideres mot eksisterende auth-brukere)
-- Passord (påkrevd, min. 8 tegn)
-- Bekreft passord
+- E-post (påkrevd, valideres mot eksisterende auth-brukere og `pending_registrations`)
 - Senter (påkrevd, dropdown med alle NAF-senterene)
 
 Merknad: Rolle er alltid `senterleder` — senterledere er de eneste som registrerer seg selv. Saksbehandlere og admins opprettes av administrator.
 
 Ved innsending:
-1. Klient kaller `POST /api/admin/register` med `{ full_name, email, password_hash_placeholder, senter }`
-   - Merk: passordet lagres **ikke** i `pending_registrations`. Det sendes videre til Supabase kun ved godkjenning.
-   - Løsning: passordet lagres kryptert (bcrypt) i `pending_registrations.password_hash` — alternativt genererer API nytt passord ved godkjenning og sender det per e-post.
-   - **Valgt løsning:** API genererer et tilfeldig midlertidig passord ved godkjenning og sender det til brukeren. Søkeren oppgir e-post og senter i skjemaet — ikke passord.
+1. Klient kaller `POST /api/admin/register` med `{ full_name, email, senter }`
+   - Ingen passord oppgis ved registrering. API genererer et tilfeldig midlertidig passord når admin godkjenner, og sender det til brukeren per e-post.
 2. API-ruten setter inn rad i `pending_registrations`
 3. API-ruten henter alle admin-e-poster og sender varslings-e-post
 4. Klient redirecter til `/registrer/bekreftet`
