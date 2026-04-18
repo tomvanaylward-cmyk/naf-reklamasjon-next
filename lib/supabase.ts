@@ -7,8 +7,13 @@ const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
 export const STATUS_LABEL: Record<CaseStatus, string> = {
-  ny: 'Ny', open: 'Åpen', waiting: 'Venter', closed: 'Lukket'
+  ny:       'Ny',
+  open:     'Åpen',
+  waiting:  'Venter',
+  eskalert: 'Eskalert',
+  closed:   'Lukket',
 };
+
 export const PRIO_LABEL: Record<CasePriority, string> = {
   low: 'Lav', normal: 'Normal', high: 'Høy', critical: 'Kritisk'
 };
@@ -28,6 +33,10 @@ export function formatDateTime(iso: string | null): string {
 export async function getCurrentUser(): Promise<Profile | null> {
   const { data: { user } } = await db.auth.getUser();
   if (!user) return null;
-  const { data } = await db.from('profiles').select('id, email, full_name, role').eq('id', user.id).single();
+  const { data } = await db
+    .from('profiles')
+    .select('id, email, full_name, role, senter')
+    .eq('id', user.id)
+    .single();
   return data as Profile | null;
 }

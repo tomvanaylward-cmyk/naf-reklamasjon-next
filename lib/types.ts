@@ -1,8 +1,8 @@
 // lib/types.ts
-export type CaseStatus = 'ny' | 'open' | 'waiting' | 'closed';
+export type CaseStatus = 'ny' | 'open' | 'waiting' | 'eskalert' | 'closed';
 export type CasePriority = 'low' | 'normal' | 'high' | 'critical';
 export type MessageType = 'customer' | 'agent' | 'internal';
-export type UserRole = 'admin' | 'agent';
+export type UserRole = 'admin' | 'saksbehandler' | 'senterleder';
 export type CaseOutcome = 'approved' | 'partial' | 'rejected' | 'dropped';
 
 export interface Case {
@@ -45,4 +45,25 @@ export interface Profile {
   email: string;
   full_name: string | null;
   role: UserRole;
+  senter: string | null;
+}
+
+export interface Attachment {
+  id: string;
+  case_id: string;
+  uploader_id: string | null;
+  file_name: string;
+  file_url: string;
+  file_size: number;
+  mime_type: string;
+  created_at: string;
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  category: string | null;
+  body: string;
+  created_by: string | null;
+  created_at: string;
 }
