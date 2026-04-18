@@ -45,7 +45,11 @@ export default function SaksbehandlingPage() {
       if (!user) { router.push('/login'); return; }
       setCurrentUser(user);
       await loadCases();
-      const { data: agentData } = await db.from('profiles').select('id, email, full_name, role').order('full_name');
+      const { data: agentData } = await db
+        .from('profiles')
+        .select('id, email, full_name, role, senter')
+        .in('role', ['saksbehandler', 'admin'])
+        .order('full_name');
       setAgents((agentData as Profile[]) || []);
     })();
   }, [router, loadCases]);
@@ -141,6 +145,45 @@ export default function SaksbehandlingPage() {
     setReplyText('');
   }
 
+  async function escalateCase() {
+    if (!activeCase || !currentUser) return;
+    const now = new Date().toISOString();
+
+    await db.from('cases').update({
+      status:      'eskalert',
+      assigned_to: null,
+      updated_at:  now,
+    }).eq('id', activeCase.id);
+
+    const msg: Omit<Message, 'id'> = {
+      case_id:     activeCase.id,
+      type:        'internal',
+      sender_name: '🔁 System',
+      content:     `Saken ble eskalert av ${currentUser.full_name || currentUser.email} til saksbehandler`,
+      created_at:  now,
+    };
+    await db.from('messages').insert(msg);
+    setMessages(prev => [...prev, { ...msg, id: crypto.randomUUID() }]);
+
+    fetch('/api/send-email', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        type:     'escalation_notify',
+        caseId:   activeCase.case_id,
+        caseName: activeCase.customer_name,
+        category: activeCase.category,
+        senter:   activeCase.senter,
+        fromName: currentUser.full_name || currentUser.email,
+      }),
+    }).catch(() => {});
+
+    setActiveCase(prev => prev ? { ...prev, status: 'eskalert', assigned_to: null } : prev);
+    setAllCases(prev => prev.map(c =>
+      c.id === activeCase.id ? { ...c, status: 'eskalert', assigned_to: null } : c
+    ));
+  }
+
   function useMLSuggestion(text: string) {
     setReplyText(text);
   }
@@ -166,7 +209,7 @@ export default function SaksbehandlingPage() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#F5F6FA]">
       {currentUser && (
-        <Navbar userName={currentUser.full_name || currentUser.email} isAdmin={currentUser.role === 'admin'} />
+        <Navbar userName={currentUser.full_name || currentUser.email} role={currentUser.role} />
       )}
 
       <div className="flex flex-1 overflow-hidden">
@@ -255,6 +298,15 @@ export default function SaksbehandlingPage() {
                   <div className="flex-1 text-[1rem] font-bold text-gray-900 tracking-tight">
                     {activeCase.customer_name} · {activeCase.category}
                   </div>
+                  {currentUser?.role === 'senterleder' &&
+                    activeCase.status !== 'eskalert' &&
+                    activeCase.status !== 'closed' && (
+                    <button
+                      onClick={escalateCase}
+                      className="text-[12px] font-semibold px-3 py-1.5 rounded-lg border-[1.5px] border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors cursor-pointer">
+                      🔺 Eskaler til saksbehandler
+                    </button>
+                  )}
                   <a href="/eksport" className="text-[12px] font-semibold px-3 py-1.5 rounded-lg border-[1.5px] border-gray-200 bg-white text-gray-500 hover:border-[#003087] hover:text-[#003087] transition-colors no-underline">
                     📊 Eksporter
                   </a>
@@ -266,6 +318,7 @@ export default function SaksbehandlingPage() {
                     <option value="ny">🔵 Ny</option>
                     <option value="open">🟡 Åpen</option>
                     <option value="waiting">🔷 Venter på kunde</option>
+                    <option value="eskalert">🟠 Eskalert</option>
                     <option value="closed">🟢 Lukket</option>
                   </select>
                   <select aria-label="Prioritet" value={activeCase.priority || 'normal'} onChange={e => updateField('priority', e.target.value)}
