@@ -49,7 +49,11 @@ export async function POST(req: NextRequest) {
 
     if (profileError) {
       console.error('Profile upsert error:', profileError);
-      return NextResponse.json({ error: 'Bruker opprettet men profil feilet' }, { status: 500 });
+      // Roll back: delete the auth user so the admin can retry
+      await adminDb.auth.admin.deleteUser(authData.user.id).catch(e =>
+        console.error('Failed to clean up auth user after profile failure:', e)
+      );
+      return NextResponse.json({ error: 'Bruker opprettet men profil feilet — forsøk igjen' }, { status: 500 });
     }
 
     await adminDb.from('pending_registrations').delete().eq('id', id);

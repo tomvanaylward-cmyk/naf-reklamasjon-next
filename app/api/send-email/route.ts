@@ -1,17 +1,12 @@
 // app/api/send-email/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
-import { createClient } from '@supabase/supabase-js';
+import { adminDb as db } from '@/lib/admin-api';
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
 const FROM = 'tom.van.aylward@gmail.com';
 const BASE_URL = 'https://naf-reklamasjon-next.vercel.app';
-
-const db = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
 
 function nafHeader(subtitle: string) {
   return `

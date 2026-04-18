@@ -23,6 +23,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Ingen felter å oppdatere' }, { status: 400 });
     }
 
+    const { data: profile, error: fetchError } = await adminDb
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (fetchError || !profile) {
+      return NextResponse.json({ error: 'Bruker ikke funnet' }, { status: 404 });
+    }
+
     const { error } = await adminDb
       .from('profiles')
       .update(updates)

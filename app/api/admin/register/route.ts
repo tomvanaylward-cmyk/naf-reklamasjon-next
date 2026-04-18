@@ -10,6 +10,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Alle felter er påkrevd' }, { status: 400 });
     }
 
+    if (!email.includes('@') || !email.includes('.')) {
+      return NextResponse.json({ error: 'Ugyldig e-postadresse' }, { status: 400 });
+    }
+
     const { data: existing } = await adminDb
       .from('pending_registrations')
       .select('id')
@@ -20,9 +24,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Det finnes allerede en søknad for denne e-posten' }, { status: 409 });
     }
 
+    // Also check if a profile already exists for this email
+    const { data: existingProfile } = await adminDb
+      .from('profiles')
+      .select('id')
+      .eq('email', email.trim().toLowerCase())
+      .maybeSingle();
+
+    if (existingProfile) {
+      return NextResponse.json({ error: 'En bruker med denne e-posten finnes allerede' }, { status: 409 });
+    }
+
     const { error: insertError } = await adminDb
       .from('pending_registrations')
-      .insert({ full_name: full_name.trim(), email: email.trim().toLowerCase(), senter });
+      .insert({ full_name: full_name.trim(), email: email.trim().toLowerCase(), senter: senter.trim() });
 
     if (insertError) {
       console.error('Insert error:', insertError);
