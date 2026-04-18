@@ -2,15 +2,16 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { db } from '@/lib/supabase';
+import type { UserRole } from '@/lib/types';
 
 interface NavbarProps {
   userName: string;
-  isAdmin: boolean;
+  role: UserRole;
 }
 
-export default function Navbar({ userName, isAdmin }: NavbarProps) {
+export default function Navbar({ userName, role }: NavbarProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const router   = useRouter();
 
   async function logout() {
     try {
@@ -22,11 +23,12 @@ export default function Navbar({ userName, isAdmin }: NavbarProps) {
   }
 
   const links = [
-    { href: '/dashboard',       label: 'Dashboard' },
-    { href: '/saksbehandling',  label: 'Saksbehandling' },
-    { href: '/eksport',         label: 'Eksport' },
-    ...(isAdmin ? [{ href: '/admin', label: 'Adminpanel' }] : []),
-  ];
+    { href: '/dashboard',      label: 'Dashboard',      roles: ['admin', 'saksbehandler', 'senterleder'] },
+    { href: '/saksbehandling', label: 'Saksbehandling', roles: ['admin', 'saksbehandler', 'senterleder'] },
+    { href: '/rapportering',   label: 'Rapportering',   roles: ['admin', 'saksbehandler'] },
+    { href: '/eksport',        label: 'Eksport',        roles: ['admin', 'saksbehandler'] },
+    { href: '/admin',          label: 'Adminpanel',     roles: ['admin'] },
+  ].filter(l => l.roles.includes(role));
 
   return (
     <nav className="bg-[#003087] h-[58px] flex items-center px-7 gap-5 sticky top-0 z-50 shadow-[0_2px_16px_rgba(0,48,135,0.35)]">
