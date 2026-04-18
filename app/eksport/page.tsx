@@ -170,7 +170,7 @@ export default function EksportPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f6fa] flex flex-col">
-      <Navbar userName={currentUser.full_name || currentUser.email} isAdmin={currentUser.role === 'admin'} />
+      <Navbar userName={currentUser.full_name || currentUser.email} role={currentUser.role} />
 
       <div className="flex-1 overflow-auto">
         <div className="max-w-4xl mx-auto px-6 py-6">
