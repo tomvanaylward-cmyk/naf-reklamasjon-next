@@ -5,20 +5,17 @@ import { db } from '@/lib/supabase';
 import type { UserRole } from '@/lib/types';
 
 interface NavbarProps {
-  userName: string;
-  role: UserRole;
+  userName:      string;
+  role:          UserRole;
+  pendingCount?: number;
 }
 
-export default function Navbar({ userName, role }: NavbarProps) {
+export default function Navbar({ userName, role, pendingCount = 0 }: NavbarProps) {
   const pathname = usePathname();
   const router   = useRouter();
 
   async function logout() {
-    try {
-      await db.auth.signOut();
-    } catch {
-      // continue to login regardless
-    }
+    try { await db.auth.signOut(); } catch { /* continue */ }
     router.push('/login');
   }
 
@@ -39,11 +36,16 @@ export default function Navbar({ userName, role }: NavbarProps) {
       <div className="flex gap-0.5 ml-auto">
         {links.map(l => (
           <Link key={l.href} href={l.href}
-            className={`text-[13.5px] font-medium px-3.5 py-1.5 rounded-lg transition-colors no-underline
+            className={`relative text-[13.5px] font-medium px-3.5 py-1.5 rounded-lg transition-colors no-underline
               ${pathname.startsWith(l.href)
                 ? 'bg-white/15 text-white'
                 : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
             {l.label}
+            {l.href === '/admin' && pendingCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#E3000F] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                {pendingCount > 9 ? '9+' : pendingCount}
+              </span>
+            )}
           </Link>
         ))}
       </div>
