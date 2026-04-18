@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type React from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { db } from '@/lib/supabase';
 
 export default function LoginPage() {
@@ -45,6 +46,13 @@ export default function LoginPage() {
             {loading ? 'Logger inn...' : 'Logg inn'}
           </button>
         </form>
+
+        <p className="text-xs text-gray-400 text-center mt-5">
+          Senterleder uten tilgang?{' '}
+          <Link href="/registrer" className="text-[#003087] font-semibold hover:underline">
+            Søk om tilgang
+          </Link>
+        </p>
       </div>
     </div>
   );
