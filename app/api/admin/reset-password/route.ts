@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { adminDb, requireAdmin } from '@/lib/admin-api';
+import { sendPasswordReset } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   const caller = await requireAdmin(req);
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const { data: profile, error: profileError } = await adminDb
       .from('profiles')
-      .select('email')
+      .select('id, email')
       .eq('id', userId)
       .single();
 
@@ -37,16 +38,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Kunne ikke tilbakestille passord' }, { status: 500 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    await fetch(`${baseUrl}/api/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type:        'password_reset',
-        to:          profile.email,
-        tempPassword,
-      }),
-    }).catch(err => console.error('Password reset email failed:', err));
+    await sendPasswordReset(profile.email, tempPassword)
+      .catch(err => console.error('Password reset email failed:', err));
 
     return NextResponse.json({ ok: true });
   } catch (err) {

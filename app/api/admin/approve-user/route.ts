@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { adminDb, requireAdmin } from '@/lib/admin-api';
+import { sendRegistrationApproved } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   const caller = await requireAdmin(req);
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
 
     if (profileError) {
       console.error('Profile upsert error:', profileError);
-      // Roll back: delete the auth user so the admin can retry
       await adminDb.auth.admin.deleteUser(authData.user.id).catch(e =>
         console.error('Failed to clean up auth user after profile failure:', e)
       );
@@ -58,17 +58,8 @@ export async function POST(req: NextRequest) {
 
     await adminDb.from('pending_registrations').delete().eq('id', id);
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    await fetch(`${baseUrl}/api/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type:          'registration_approved',
-        to:            pending.email,
-        applicantName: pending.full_name,
-        tempPassword,
-      }),
-    }).catch(err => console.error('Approval email failed:', err));
+    await sendRegistrationApproved(pending.email, pending.full_name, tempPassword)
+      .catch(err => console.error('Approval email failed:', err));
 
     return NextResponse.json({ ok: true });
   } catch (err) {

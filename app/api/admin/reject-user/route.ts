@@ -1,6 +1,7 @@
 // app/api/admin/reject-user/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, requireAdmin } from '@/lib/admin-api';
+import { sendRegistrationRejected } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   const caller = await requireAdmin(req);
@@ -23,16 +24,8 @@ export async function POST(req: NextRequest) {
 
     await adminDb.from('pending_registrations').delete().eq('id', id);
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    await fetch(`${baseUrl}/api/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type:          'registration_rejected',
-        to:            pending.email,
-        applicantName: pending.full_name,
-      }),
-    }).catch(err => console.error('Rejection email failed:', err));
+    await sendRegistrationRejected(pending.email, pending.full_name)
+      .catch(err => console.error('Rejection email failed:', err));
 
     return NextResponse.json({ ok: true });
   } catch (err) {
