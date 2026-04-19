@@ -93,7 +93,7 @@ export default function NyReklamasjonPage() {
     const id = generateCaseId();
     const slaDeadline = calculateSLADeadline(new Date().toISOString(), form.company || null);
 
-    const { error: dbError } = await db.from('cases').insert({
+    const { data: insertedCase, error: dbError } = await db.from('cases').insert({
       case_id:            id,
       customer_name:      form.customer_name,
       customer_email:     form.customer_email,
@@ -111,7 +111,7 @@ export default function NyReklamasjonPage() {
       priority:           'normal',
       sla_deadline:       slaDeadline,
       created_at:         new Date().toISOString(),
-    });
+    }).select('id').single();
 
     if (dbError) {
       setError('Noe gikk galt. Prøv igjen eller kontakt oss direkte.');
@@ -131,9 +131,9 @@ export default function NyReklamasjonPage() {
     }).catch(() => {});
 
     // Upload attachments (non-blocking — failures don't affect the case)
-    if (files.length > 0) {
+    if (files.length > 0 && insertedCase?.id) {
       const fd = new FormData();
-      fd.append('case_id', id);
+      fd.append('case_id', insertedCase.id);
       files.forEach(f => fd.append('files', f));
       fetch('/api/attachments/upload', { method: 'POST', body: fd }).catch(() => {});
     }
