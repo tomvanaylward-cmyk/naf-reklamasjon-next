@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     if (createError || !authData.user) {
       console.error('Create user error:', createError);
-      return NextResponse.json({ error: 'Kunne ikke opprette bruker' }, { status: 500 });
+      return NextResponse.json({ error: `Kunne ikke opprette bruker: ${createError?.message ?? 'ukjent feil'}` }, { status: 500 });
     }
 
     const { error: profileError } = await adminDb
