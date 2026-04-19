@@ -2,19 +2,31 @@
 import type React from 'react';
 import { formatDateTime, formatDate } from '@/lib/supabase';
 import { ML_SUGGESTIONS } from '@/lib/ml-suggestions';
-import type { Case, Message } from '@/lib/types';
+import type { Case, Message, Attachment } from '@/lib/types';
+import { formatFileSize } from '@/lib/attachments';
 
 interface TimelineProps {
-  activeCase: Case;
-  messages: Message[];
-  similarCases: Case[];
-  onUseML: (text: string) => void;
+  activeCase:        Case;
+  messages:          Message[];
+  attachments:       Attachment[];
+  similarCases:      Case[];
+  onUseML:           (text: string) => void;
+  onOpenAttachment:  (a: Attachment) => void;
 }
 
-export default function Timeline({ activeCase: c, messages, similarCases, onUseML }: TimelineProps) {
+export default function Timeline({ activeCase: c, messages, attachments, similarCases, onUseML, onOpenAttachment }: TimelineProps) {
   const mlText = ML_SUGGESTIONS[c.category];
   const today  = new Date().toDateString();
   let todayInserted = false;
+
+  type TLEntry =
+    | { kind: 'message';    data: Message;    ts: number }
+    | { kind: 'attachment'; data: Attachment; ts: number };
+
+  const entries: TLEntry[] = [
+    ...messages.map(m    => ({ kind: 'message'    as const, data: m, ts: new Date(m.created_at).getTime() })),
+    ...attachments.map(a => ({ kind: 'attachment' as const, data: a, ts: new Date(a.created_at).getTime() })),
+  ].sort((a, b) => a.ts - b.ts);
 
   return (
     <div className="relative pl-9">
@@ -49,17 +61,47 @@ export default function Timeline({ activeCase: c, messages, similarCases, onUseM
         </TimelineItem>
       )}
 
-      {/* Meldinger */}
-      {messages.map(m => {
+      {/* Meldinger og vedlegg */}
+      {entries.map((entry, idx) => {
+        if (entry.kind === 'attachment') {
+          const a       = entry.data;
+          const isImage = a.mime_type.startsWith('image/');
+          return (
+            <TimelineItem
+              key={`att-${a.id}`}
+              dot="gray"
+              label="📎 Vedlegg"
+              labelCls="bg-gray-100 text-gray-500"
+              time={`${a.uploader_name ?? 'Kunde'} · ${formatDateTime(a.created_at)}`}
+            >
+              <button
+                onClick={() => onOpenAttachment(a)}
+                className="flex items-center gap-2 text-[13px] text-[#003087] hover:underline cursor-pointer bg-transparent border-none p-0"
+              >
+                <span>{isImage ? '🖼' : '📄'}</span>
+                <span>{a.file_name}</span>
+                <span className="text-gray-400">· {formatFileSize(a.file_size)}</span>
+              </button>
+            </TimelineItem>
+          );
+        }
+
+        // message entry
+        const m       = entry.data;
         const msgDate = new Date(m.created_at).toDateString();
         const showToday = !todayInserted && msgDate === today;
         if (showToday) todayInserted = true;
+
         const isCustomer = m.type === 'customer';
         const isInternal = m.type === 'internal';
-        const boxCls = isCustomer ? 'bg-blue-50 border-blue-200' : isInternal ? 'bg-amber-50 border-yellow-200' : 'bg-emerald-50 border-emerald-200';
+        const boxCls = isCustomer  ? 'bg-blue-50 border-blue-200'
+                     : isInternal  ? 'bg-amber-50 border-yellow-200'
+                     :                'bg-emerald-50 border-emerald-200';
         const dotColor = isCustomer ? 'blue' : isInternal ? 'amber' : 'green';
-        const lbl    = isCustomer ? '← Kunde' : isInternal ? '🔒 Internt' : '→ Saksbehandler';
-        const lblCls = isCustomer ? 'bg-blue-100 text-blue-700' : isInternal ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800';
+        const lbl      = isCustomer ? '← Kunde' : isInternal ? '🔒 Internt' : '→ Saksbehandler';
+        const lblCls   = isCustomer ? 'bg-blue-100 text-blue-700'
+                       : isInternal ? 'bg-amber-50 text-amber-800'
+                       :               'bg-emerald-50 text-emerald-800';
         return (
           <div key={m.id}>
             {showToday && <TodayDivider />}
