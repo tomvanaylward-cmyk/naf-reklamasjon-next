@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, getCurrentUser, formatDate, STATUS_LABEL, PRIO_LABEL } from '@/lib/supabase';
 import { ML_SUGGESTIONS } from '@/lib/ml-suggestions';
-import type { Case, Message, Profile, CaseStatus, CasePriority, CaseOutcome } from '@/lib/types';
+import type { Case, Message, Profile, CaseStatus, CasePriority, CaseOutcome, Attachment } from '@/lib/types';
+import { uploadAttachmentAuthenticated, getSignedUrl, validateFile, formatFileSize, MAX_FILES } from '@/lib/attachments';
 import Navbar from '@/components/Navbar';
 import StatusBadge from '@/components/StatusBadge';
 import InfoRow from '@/components/InfoRow';
@@ -26,6 +27,10 @@ export default function SaksbehandlingPage() {
   const [agents, setAgents]             = useState<Profile[]>([]);
   const [replyType, setReplyType]       = useState<'email' | 'internal'>('email');
   const [replyText, setReplyText]       = useState('');
+  const [attachments,     setAttachments]     = useState<Attachment[]>([]);
+  const [attachmentError, setAttachmentError] = useState('');
+  const [lightboxUrl,     setLightboxUrl]     = useState<string | null>(null);
+  const [uploading,       setUploading]       = useState(false);
   const [costEst, setCostEst]           = useState('');
   const [costAct, setCostAct]           = useState('');
   const tlRef = useRef<HTMLDivElement>(null);
@@ -71,8 +76,20 @@ export default function SaksbehandlingPage() {
     const c = allCases.find(c => c.id === id);
     if (!c) return;
     setActiveCase(c);
-    const { data: msgs } = await db.from('messages').select('*').eq('case_id', id).order('created_at', { ascending: true });
+    const [{ data: msgs }, { data: atts }] = await Promise.all([
+      db.from('messages').select('*').eq('case_id', id).order('created_at', { ascending: true }),
+      db.from('attachments')
+        .select('*, uploader:profiles!uploader_id(full_name, email)')
+        .eq('case_id', id)
+        .order('created_at', { ascending: true }),
+    ]);
     setMessages((msgs as Message[]) || []);
+    const mapped: Attachment[] = ((atts as any[]) || []).map((a: any) => ({
+      ...a,
+      uploader_name: a.uploader ? (a.uploader.full_name || a.uploader.email) : null,
+      uploader: undefined,
+    }));
+    setAttachments(mapped);
     setCostEst(c.cost_estimated != null ? String(c.cost_estimated) : '');
     setCostAct(c.cost_actual    != null ? String(c.cost_actual)    : '');
   }
@@ -182,6 +199,55 @@ export default function SaksbehandlingPage() {
     setAllCases(prev => prev.map(c =>
       c.id === activeCase.id ? { ...c, status: 'eskalert', assigned_to: null } : c
     ));
+  }
+
+  async function handleAgentFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!activeCase || !currentUser) return;
+    const selected = Array.from(e.target.files ?? []);
+    e.target.value = '';
+
+    if (selected.length === 0) return;
+    if (selected.length > MAX_FILES) {
+      setAttachmentError(`Maks ${MAX_FILES} filer per gang`);
+      return;
+    }
+    for (const f of selected) {
+      const err = validateFile(f);
+      if (err) { setAttachmentError(err); return; }
+    }
+
+    setAttachmentError('');
+    setUploading(true);
+
+    for (const f of selected) {
+      const err = await uploadAttachmentAuthenticated(activeCase.id, f, currentUser.id);
+      if (err) { setAttachmentError(err); break; }
+    }
+
+    setUploading(false);
+
+    // Refresh attachments list
+    const { data: atts } = await db
+      .from('attachments')
+      .select('*, uploader:profiles!uploader_id(full_name, email)')
+      .eq('case_id', activeCase.id)
+      .order('created_at', { ascending: true });
+    const mapped: Attachment[] = ((atts as any[]) || []).map((a: any) => ({
+      ...a,
+      uploader_name: a.uploader ? (a.uploader.full_name || a.uploader.email) : null,
+      uploader: undefined,
+    }));
+    setAttachments(mapped);
+  }
+
+  async function openAttachment(a: Attachment) {
+    const url = await getSignedUrl(a.storage_path);
+    if (!url) { setAttachmentError('Kunne ikke åpne fil'); return; }
+    if (a.mime_type.startsWith('image/')) {
+      setLightboxUrl(url);
+    } else {
+      window.open(url, '_blank');
+    }
   }
 
   function useMLSuggestion(text: string) {
@@ -345,8 +411,10 @@ export default function SaksbehandlingPage() {
                   <Timeline
                     activeCase={activeCase}
                     messages={messages}
+                    attachments={attachments}
                     similarCases={similarCases}
                     onUseML={useMLSuggestion}
+                    onOpenAttachment={openAttachment}
                   />
                 </div>
 
@@ -434,6 +502,45 @@ export default function SaksbehandlingPage() {
                     <InfoRow label="Dato besøk" value={formatDate(activeCase.visit_date)} />
                     <InfoRow label="Ordrenr."   value={activeCase.order_number} />
                   </div>
+
+                  {/* Vedlegg */}
+                  <div>
+                    <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">Vedlegg</div>
+                    {attachments.length === 0 ? (
+                      <p className="text-[12px] text-gray-400 mb-2">Ingen vedlegg ennå</p>
+                    ) : (
+                      <div className="flex flex-col gap-1 mb-2">
+                        {attachments.map(a => (
+                          <button
+                            key={a.id}
+                            onClick={() => openAttachment(a)}
+                            className="flex items-center gap-2 text-left w-full text-[12px] text-[#003087] hover:bg-blue-50 rounded-lg px-2 py-1.5 transition-colors cursor-pointer bg-transparent border-none"
+                          >
+                            <span className="flex-shrink-0">{a.mime_type.startsWith('image/') ? '🖼' : '📄'}</span>
+                            <span className="truncate flex-1">{a.file_name}</span>
+                            <span className="text-gray-400 flex-shrink-0 text-[11px]">{formatFileSize(a.file_size)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <label className={`text-[12px] font-semibold border-[1.5px] rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1.5 w-full justify-center
+                      ${uploading
+                        ? 'text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'text-[#003087] border-[#003087]/30 hover:bg-blue-50 cursor-pointer'}`}>
+                      {uploading ? '📎 Laster opp...' : '📎 Last opp fil'}
+                      <input
+                        type="file"
+                        multiple
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        className="hidden"
+                        disabled={uploading}
+                        onChange={handleAgentFileUpload}
+                      />
+                    </label>
+                    {attachmentError && (
+                      <p className="text-red-600 text-[11px] mt-1">{attachmentError}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -463,6 +570,27 @@ export default function SaksbehandlingPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Lightbox */}
+              {lightboxUrl && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+                  onClick={() => setLightboxUrl(null)}
+                >
+                  <img
+                    src={lightboxUrl}
+                    alt="Vedlegg"
+                    className="max-w-[90vw] max-h-[90vh] rounded-lg shadow-2xl object-contain"
+                    onClick={e => e.stopPropagation()}
+                  />
+                  <button
+                    onClick={() => setLightboxUrl(null)}
+                    className="absolute top-4 right-4 text-white text-2xl font-bold cursor-pointer bg-transparent border-none hover:text-gray-300"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
