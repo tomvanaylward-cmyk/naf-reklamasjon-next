@@ -62,10 +62,11 @@ export interface Attachment {
   id: string;
   case_id: string;
   uploader_id: string | null;
+  uploader_name?: string | null;   // resolved at query time via join
   file_name: string;
-  file_url: string;
   file_size: number;
   mime_type: string;
+  storage_path: string;
   created_at: string;
 }
 
