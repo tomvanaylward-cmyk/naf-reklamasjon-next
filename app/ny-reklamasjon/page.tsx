@@ -111,7 +111,7 @@ export default function NyReklamasjonPage() {
       priority:           'normal',
       sla_deadline:       slaDeadline,
       created_at:         new Date().toISOString(),
-    }).select('id').single();
+    });
 
     if (dbError) {
       setError('Noe gikk galt. Prøv igjen eller kontakt oss direkte.');
