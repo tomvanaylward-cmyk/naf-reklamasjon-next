@@ -114,7 +114,9 @@ export default function NyReklamasjonPage() {
     });
 
     if (dbError) {
-      setError('Noe gikk galt. Prøv igjen eller kontakt oss direkte.');
+      // Show raw error in dev so we can debug; show generic in prod
+      const detail = dbError.message || dbError.code || JSON.stringify(dbError);
+      setError(`Feil: ${detail}`);
       setLoading(false);
       return;
     }

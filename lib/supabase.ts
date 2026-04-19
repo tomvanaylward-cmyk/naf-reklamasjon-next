@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { CaseStatus, CasePriority, Profile } from './types';
 
-const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL!.trim();
-const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!.trim();
+// Strip ALL whitespace (newlines, spaces, tabs) — Vercel sometimes adds trailing \n
+const SUPABASE_URL  = (process.env.NEXT_PUBLIC_SUPABASE_URL  ?? '').trim();
+const SUPABASE_ANON = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '').replace(/\s/g, '');
 
 export const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
