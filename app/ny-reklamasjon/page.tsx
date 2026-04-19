@@ -91,11 +91,9 @@ export default function NyReklamasjonPage() {
     setError('');
 
     const id = generateCaseId();
-    const uuid = crypto.randomUUID();
     const slaDeadline = calculateSLADeadline(new Date().toISOString(), form.company || null);
 
     const { error: dbError } = await db.from('cases').insert({
-      id:                 uuid,
       case_id:            id,
       customer_name:      form.customer_name,
       customer_email:     form.customer_email,
@@ -135,7 +133,7 @@ export default function NyReklamasjonPage() {
     // Upload attachments (non-blocking — failures don't affect the case)
     if (files.length > 0) {
       const fd = new FormData();
-      fd.append('case_id', uuid);
+      fd.append('case_id', id);
       files.forEach(f => fd.append('files', f));
       fetch('/api/attachments/upload', { method: 'POST', body: fd }).catch(() => {});
     }

@@ -15,6 +15,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'case_id er påkrevd' }, { status: 400 });
     }
 
+    // case_id may be the human-readable ID (e.g. NAF-202604-0001) — look up the UUID
+    let caseUuid = caseId;
+    if (!caseId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-/i)) {
+      const { data: caseRow } = await adminDb
+        .from('cases')
+        .select('id')
+        .eq('case_id', caseId)
+        .single();
+      if (!caseRow) {
+        return NextResponse.json({ error: 'Sak ikke funnet' }, { status: 404 });
+      }
+      caseUuid = caseRow.id;
+    }
+
     const files = formData.getAll('files') as File[];
 
     if (files.length === 0) {
@@ -43,7 +57,7 @@ export async function POST(req: NextRequest) {
 
       const ext         = file.name.split('.').pop() ?? 'bin';
       const safeName    = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
-      const storagePath = `${caseId}/${safeName}`;
+      const storagePath = `${caseUuid}/${safeName}`;
 
       const { error: storageError } = await adminDb.storage
         .from('case-attachments')
@@ -59,7 +73,7 @@ export async function POST(req: NextRequest) {
       }
 
       const { error: dbError } = await adminDb.from('attachments').insert({
-        case_id:      caseId,
+        case_id:      caseUuid,
         uploader_id:  null,
         file_name:    file.name,
         file_size:    file.size,
