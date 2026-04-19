@@ -150,6 +150,23 @@ export default function AdminPage() {
     } finally { setUpdating(null); }
   }
 
+  async function deleteUser(profile: Profile) {
+    if (!confirm(`Er du sikker på at du vil slette ${profile.full_name || profile.email}? Dette kan ikke angres.`)) return;
+    setUpdating(profile.id);
+    setMessage('');
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/admin/delete-user', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body:    JSON.stringify({ userId: profile.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMessage(`Feil: ${data.error}`); }
+      else          { setMessage(`${profile.full_name || profile.email} er slettet.`); setExpandedId(null); await loadData(); }
+    } finally { setUpdating(null); }
+  }
+
   async function resetPassword(profile: Profile) {
     if (!confirm(`Tilbakestill passord for ${profile.full_name || profile.email}? Et nytt midlertidig passord sendes på e-post.`)) return;
     setUpdating(profile.id);
@@ -329,6 +346,15 @@ export default function AdminPage() {
                           className="text-xs font-semibold px-4 py-2 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50 cursor-pointer"
                         >
                           🔑 Tilbakestill passord
+                        </button>
+                        <button
+                          onClick={() => deleteUser(profile)}
+                          disabled={updating === profile.id || profile.id === currentUser.id}
+                          title={profile.id === currentUser.id ? 'Kan ikke slette deg selv' : undefined}
+                          className={`text-xs font-semibold px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 cursor-pointer
+                            ${profile.id === currentUser.id ? 'cursor-not-allowed' : ''}`}
+                        >
+                          🗑 Slett bruker
                         </button>
                       </div>
                     </div>
