@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { db } from '@/lib/supabase';
 import { calculateSLADeadline } from '@/lib/sla';
+import { validateFile, formatFileSize, MAX_FILES } from '@/lib/attachments';
 
 const KATEGORIER = [
   'Dekkskifte',
@@ -41,6 +42,8 @@ export default function NyReklamasjonPage() {
   const [caseId, setCaseId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [files,     setFiles]     = useState<File[]>([]);
+  const [fileError, setFileError] = useState('');
 
   const [form, setForm] = useState({
     customer_name: '',
@@ -59,6 +62,27 @@ export default function NyReklamasjonPage() {
 
   function set(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? []);
+    e.target.value = '';  // reset so same file can be re-selected
+
+    const combined = [...files, ...selected];
+    if (combined.length > MAX_FILES) {
+      setFileError(`Maks ${MAX_FILES} filer per innmelding`);
+      return;
+    }
+    for (const f of selected) {
+      const err = validateFile(f);
+      if (err) { setFileError(err); return; }
+    }
+    setFileError('');
+    setFiles(combined);
+  }
+
+  function removeFile(idx: number) {
+    setFiles(prev => prev.filter((_, i) => i !== idx));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -105,6 +129,14 @@ export default function NyReklamasjonPage() {
         caseId: id,
       }),
     }).catch(() => {});
+
+    // Upload attachments (non-blocking — failures don't affect the case)
+    if (files.length > 0) {
+      const fd = new FormData();
+      fd.append('case_id', id);
+      files.forEach(f => fd.append('files', f));
+      fetch('/api/attachments/upload', { method: 'POST', body: fd }).catch(() => {});
+    }
 
     setCaseId(id);
     setStep('success');
@@ -220,6 +252,38 @@ export default function NyReklamasjonPage() {
               <textarea value={form.desired_resolution} onChange={e => set('desired_resolution', e.target.value)}
                 placeholder="F.eks. refusjon, reparasjon, ny kontroll..."
                 rows={3} className={`${inputCls} resize-none`} />
+            </Field>
+
+            <Field label="Last opp bilder eller dokumenter (valgfritt)">
+              <label className={`${inputCls} cursor-pointer flex items-center gap-2 text-gray-400 hover:border-[#003087] transition-colors`}>
+                <span>📎 Velg filer (JPG, PNG, PDF · maks 10 MB per fil)</span>
+                <input
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
+              {fileError && (
+                <p className="text-red-600 text-xs">{fileError}</p>
+              )}
+              {files.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  {files.map((f, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                      <span className="text-gray-700 truncate">{f.name} · {formatFileSize(f.size)}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(i)}
+                        className="text-gray-400 hover:text-red-500 ml-2 flex-shrink-0 cursor-pointer bg-transparent border-none"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Field>
           </Section>
 
