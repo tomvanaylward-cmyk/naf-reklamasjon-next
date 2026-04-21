@@ -1,6 +1,6 @@
 'use client';
 import type React from 'react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, getCurrentUser, formatDate, STATUS_LABEL, PRIO_LABEL } from '@/lib/supabase';
 import { ML_SUGGESTIONS } from '@/lib/ml-suggestions';
@@ -272,6 +272,24 @@ export default function SaksbehandlingPage() {
     ? allCases.filter(x => x.id !== activeCase.id && x.category === activeCase.category && x.status === 'closed').slice(0, 3)
     : [];
 
+  // Map normalized reg_nr → all cases with that plate (for duplicate detection)
+  const regNrMap = useMemo(() => {
+    const map = new Map<string, Case[]>();
+    for (const c of allCases) {
+      if (!c.reg_nr) continue;
+      const key = c.reg_nr.toUpperCase().replace(/\s/g, '');
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(c);
+    }
+    return map;
+  }, [allCases]);
+
+  // Other cases sharing the same reg_nr as the open case
+  const regNrSiblings: Case[] = activeCase?.reg_nr
+    ? (regNrMap.get(activeCase.reg_nr.toUpperCase().replace(/\s/g, '')) ?? [])
+        .filter(c => c.id !== activeCase.id)
+    : [];
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#F5F6FA]">
       {currentUser && (
@@ -327,6 +345,11 @@ export default function SaksbehandlingPage() {
                         <StatusBadge status={c.status} />
                         <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: PRIO_COLORS[c.priority || 'normal'] }} />
                         {isOverdue && <span className="text-[10px] text-red-600 font-bold">SLA!</span>}
+                        {c.reg_nr && (regNrMap.get(c.reg_nr.toUpperCase().replace(/\s/g, '')) ?? []).length > 1 && (
+                          <span title="Flere reklamasjoner på samme reg.nr." className="text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 rounded px-1 leading-4">
+                            🚗×{(regNrMap.get(c.reg_nr.toUpperCase().replace(/\s/g, '')) ?? []).length}
+                          </span>
+                        )}
                       </div>
                       <span className="text-[10.5px] font-mono text-gray-400">{formatDate(c.created_at)}</span>
                     </div>
@@ -403,6 +426,29 @@ export default function SaksbehandlingPage() {
                   </select>
                 </div>
               </div>
+
+              {/* Duplicate reg.nr. warning */}
+              {regNrSiblings.length > 0 && (
+                <div className="flex-shrink-0 bg-orange-50 border-b border-orange-200 px-5 py-2.5 flex items-start gap-2.5">
+                  <span className="text-orange-500 text-[15px] flex-shrink-0 mt-0.5">⚠️</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[12px] font-bold text-orange-800">
+                      {activeCase.reg_nr} er registrert i {regNrSiblings.length} annen{regNrSiblings.length > 1 ? 'e' : ''} sak{regNrSiblings.length > 1 ? 'er' : ''}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {regNrSiblings.map(s => (
+                        <button
+                          key={s.id}
+                          onClick={() => openCase(s.id)}
+                          className="text-[11px] font-mono text-orange-700 bg-white border border-orange-200 rounded px-2 py-0.5 hover:bg-orange-100 cursor-pointer transition-colors"
+                        >
+                          {s.case_id} · {s.customer_name} · {formatDate(s.created_at)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Body: timeline + right sidebar */}
               <div className="flex flex-1 overflow-hidden">
