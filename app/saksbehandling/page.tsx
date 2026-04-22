@@ -745,7 +745,7 @@ export default function SaksbehandlingPage() {
                           </button>
                           {showTemplates && (
                             <div
-                              className="absolute left-0 bottom-full mb-2 bg-white border border-gray-200 rounded-xl shadow-lg z-30 w-[340px] max-h-[360px] overflow-y-auto"
+                              className="absolute left-0 bottom-full mb-2 bg-white border border-gray-200 rounded-xl shadow-lg z-30 w-[400px] max-h-[400px] overflow-y-auto"
                               onMouseLeave={() => setShowTemplates(false)}
                             >
                               {templates.length === 0 ? (
@@ -772,12 +772,12 @@ export default function SaksbehandlingPage() {
                                         {arr.map(t => (
                                           <div
                                             key={t.id}
-                                            className="group flex items-start gap-2 px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-b-0"
+                                            className="group flex items-start gap-2 px-3 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                                             onClick={() => applyTemplate(t)}
                                           >
                                             <div className="flex-1 min-w-0">
                                               <div className="text-[12.5px] font-semibold text-gray-800 truncate">{t.name}</div>
-                                              <div className="text-[11px] text-gray-400 line-clamp-2">{t.body.replace(/\s+/g, ' ').slice(0, 110)}…</div>
+                                              <div className="text-[11.5px] text-gray-500 line-clamp-2 leading-snug">{t.body.replace(/\{\{[^}]+\}\}/g, s => s.slice(2,-2)).replace(/\s+/g, ' ').slice(0, 120)}…</div>
                                             </div>
                                             {t.created_by === currentUser?.id && (
                                               <button
