@@ -114,9 +114,12 @@ export default function NyReklamasjonPage() {
     });
 
     if (dbError) {
-      // Show raw error in dev so we can debug; show generic in prod
-      const detail = dbError.message || dbError.code || JSON.stringify(dbError);
-      setError(`Feil: ${detail}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Case insert error:', dbError);
+        setError(`Feil: ${dbError.message || dbError.code || JSON.stringify(dbError)}`);
+      } else {
+        setError('Noe gikk galt. Prøv igjen eller kontakt oss direkte.');
+      }
       setLoading(false);
       return;
     }

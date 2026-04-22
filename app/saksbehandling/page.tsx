@@ -151,12 +151,17 @@ export default function SaksbehandlingPage() {
       await updateField('status', 'open');
     }
     if (isEmail) {
-      fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'agent_reply', to: activeCase.customer_email,
-          caseId: activeCase.case_id, replyContent: content, fromName: currentUser.full_name || 'NAF Saksbehandler' }),
-      }).catch(() => {/* email errors are non-blocking */});
+      db.auth.getSession().then(({ data: { session } }) => {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ type: 'agent_reply', to: activeCase.customer_email,
+            caseId: activeCase.case_id, replyContent: content, fromName: currentUser.full_name || 'NAF Saksbehandler' }),
+        }).catch(() => {/* email errors are non-blocking */});
+      });
     }
     setMessages(prev => [...prev, { ...msg, id: crypto.randomUUID() }]);
     setReplyText('');
@@ -182,18 +187,23 @@ export default function SaksbehandlingPage() {
     await db.from('messages').insert(msg);
     setMessages(prev => [...prev, { ...msg, id: crypto.randomUUID() }]);
 
-    fetch('/api/send-email', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        type:     'escalation_notify',
-        caseId:   activeCase.case_id,
-        caseName: activeCase.customer_name,
-        category: activeCase.category,
-        senter:   activeCase.senter,
-        fromName: currentUser.full_name || currentUser.email,
-      }),
-    }).catch(() => {});
+    db.auth.getSession().then(({ data: { session } }) => {
+      fetch('/api/send-email', {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          type:     'escalation_notify',
+          caseId:   activeCase.case_id,
+          caseName: activeCase.customer_name,
+          category: activeCase.category,
+          senter:   activeCase.senter,
+          fromName: currentUser.full_name || currentUser.email,
+        }),
+      }).catch(() => {});
+    });
 
     setActiveCase(prev => prev ? { ...prev, status: 'eskalert', assigned_to: null } : prev);
     setAllCases(prev => prev.map(c =>

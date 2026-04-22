@@ -1,21 +1,32 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
 import { createClient } from '@supabase/supabase-js';
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-const NOTIFY_RECIPIENTS = [
-  'alem.dulic@naf.no',
-  'tom.van.aylward@naf.no',
-];
+// Recipients stored in env var: NOTIFY_RECIPIENTS=a@b.no,c@d.no
+const NOTIFY_RECIPIENTS = (process.env.NOTIFY_RECIPIENTS ?? '')
+  .split(',')
+  .map(e => e.trim())
+  .filter(Boolean);
 
+// Server-only client — never falls back to anon key
 const db = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim(),
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-export async function GET() {
-  // Hent åpne saker som har passert SLA-fristen
+export async function GET(req: NextRequest) {
+  // Require a CRON_SECRET header to prevent unauthenticated triggering
+  const secret = req.headers.get('x-cron-secret');
+  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (NOTIFY_RECIPIENTS.length === 0) {
+    return NextResponse.json({ error: 'NOTIFY_RECIPIENTS env var ikke satt' }, { status: 500 });
+  }
+
   const now = new Date().toISOString();
   const { data: hangingCases, error } = await db
     .from('cases')
@@ -26,7 +37,7 @@ export async function GET() {
 
   if (error) {
     console.error('Supabase error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Databasefeil' }, { status: 500 });
   }
 
   if (!hangingCases || hangingCases.length === 0) {
@@ -85,12 +96,7 @@ export async function GET() {
 
   const subject = `⚠️ ${count} sak${count > 1 ? 'er henger' : ' henger'} over SLA – NAF Reklamasjon`;
 
-  await sgMail.sendMultiple({
-    to: NOTIFY_RECIPIENTS,
-    from: 'tom.van.aylward@gmail.com',
-    subject,
-    html,
-  });
+  await sgMail.sendMultiple({ to: NOTIFY_RECIPIENTS, from: 'tom.van.aylward@gmail.com', subject, html });
 
-  return NextResponse.json({ sent: true, count, recipients: NOTIFY_RECIPIENTS });
+  return NextResponse.json({ sent: true, count });
 }

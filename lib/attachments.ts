@@ -30,8 +30,12 @@ export async function uploadAttachmentAuthenticated(
   file: File,
   uploaderId: string,
 ): Promise<string | null> {
-  const ext         = file.name.split('.').pop() ?? 'bin';
-  const safeName    = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+  // Derive extension from validated MIME type, not the filename (prevents path traversal)
+  const EXT_MAP: Record<string, string> = {
+    'image/jpeg': 'jpg', 'image/png': 'png', 'application/pdf': 'pdf',
+  };
+  const ext      = EXT_MAP[file.type] ?? 'bin';
+  const safeName = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   const storagePath = `${caseId}/${safeName}`;
 
   const { error: storageError } = await db.storage

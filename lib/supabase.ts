@@ -1,11 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 import type { CaseStatus, CasePriority, Profile } from './types';
 
-// Strip ALL whitespace (newlines, spaces, tabs) — Vercel sometimes adds trailing \n
+// Strip ALL whitespace — Vercel sometimes adds trailing \n to env vars
 const SUPABASE_URL  = (process.env.NEXT_PUBLIC_SUPABASE_URL  ?? '').trim();
 const SUPABASE_ANON = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '').replace(/\s/g, '');
 
-export const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+// createBrowserClient stores the session in cookies (not localStorage),
+// which makes it readable by the Next.js middleware for server-side auth guards.
+export const db = createBrowserClient(SUPABASE_URL, SUPABASE_ANON);
 
 export const STATUS_LABEL: Record<CaseStatus, string> = {
   ny:       'Ny',
