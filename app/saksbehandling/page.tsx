@@ -33,6 +33,8 @@ export default function SaksbehandlingPage() {
   const [uploading,       setUploading]       = useState(false);
   const [costEst, setCostEst]           = useState('');
   const [costAct, setCostAct]           = useState('');
+  const [rightTab, setRightTab]         = useState<'sak' | 'okonomi' | 'vedlegg'>('sak');
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const tlRef = useRef<HTMLDivElement>(null);
 
   const filteredCases = filter === 'alle' ? allCases : allCases.filter(c => c.status === filter);
@@ -381,59 +383,69 @@ export default function SaksbehandlingPage() {
             </div>
           ) : (
             <>
-              {/* Detail header */}
-              <div className="bg-[#F8F9FC] border-b border-gray-200 px-5 py-3 flex-shrink-0">
-                <div className="flex items-center justify-between gap-3 mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={() => navigateCase(-1)} disabled={activeCaseIdx <= 0}
-                      className="text-[12px] font-semibold px-2.5 py-1 rounded-lg border-[1.5px] border-gray-200 bg-white text-gray-500 cursor-pointer hover:border-[#003087] hover:text-[#003087] disabled:opacity-35 disabled:cursor-default transition-colors">
-                      ← Forrige
-                    </button>
-                    <button onClick={() => navigateCase(1)} disabled={activeCaseIdx < 0 || activeCaseIdx >= filteredCases.length - 1}
-                      className="text-[12px] font-semibold px-2.5 py-1 rounded-lg border-[1.5px] border-gray-200 bg-white text-gray-500 cursor-pointer hover:border-[#003087] hover:text-[#003087] disabled:opacity-35 disabled:cursor-default transition-colors">
-                      Neste →
-                    </button>
-                  </div>
-                  <div className="flex-1 text-[1rem] font-bold text-gray-900 tracking-tight">
-                    {activeCase.customer_name} · {activeCase.category}
-                  </div>
-                  {currentUser?.role === 'senterleder' &&
-                    activeCase.status !== 'eskalert' &&
-                    activeCase.status !== 'closed' && (
-                    <button
-                      onClick={escalateCase}
-                      className="text-[12px] font-semibold px-3 py-1.5 rounded-lg border-[1.5px] border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors cursor-pointer">
-                      🔺 Eskaler til saksbehandler
-                    </button>
-                  )}
-                  <a href="/eksport" className="text-[12px] font-semibold px-3 py-1.5 rounded-lg border-[1.5px] border-gray-200 bg-white text-gray-500 hover:border-[#003087] hover:text-[#003087] transition-colors no-underline">
-                    📊 Eksporter
-                  </a>
+              {/* Detail header — single compact row */}
+              <div className="bg-[#F8F9FC] border-b border-gray-200 px-4 py-2.5 flex-shrink-0 flex items-center gap-2">
+                {/* Navigation */}
+                <button onClick={() => navigateCase(-1)} disabled={activeCaseIdx <= 0}
+                  className="text-[12px] px-2 py-1 rounded border border-gray-200 bg-white text-gray-400 cursor-pointer hover:text-[#003087] hover:border-[#003087] disabled:opacity-30 disabled:cursor-default transition-colors">
+                  ←
+                </button>
+                <button onClick={() => navigateCase(1)} disabled={activeCaseIdx < 0 || activeCaseIdx >= filteredCases.length - 1}
+                  className="text-[12px] px-2 py-1 rounded border border-gray-200 bg-white text-gray-400 cursor-pointer hover:text-[#003087] hover:border-[#003087] disabled:opacity-30 disabled:cursor-default transition-colors">
+                  →
+                </button>
+
+                {/* Case identity */}
+                <div className="flex items-baseline gap-2 flex-1 min-w-0">
+                  <span className="font-bold text-gray-900 text-[14px] truncate">{activeCase.customer_name}</span>
+                  <span className="text-gray-300 text-[13px]">·</span>
+                  <span className="text-gray-500 text-[13px] truncate">{activeCase.category}</span>
+                  <span className="text-[11px] font-mono text-gray-300 flex-shrink-0">{activeCase.case_id}</span>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11.5px] font-mono text-gray-400">{activeCase.case_id}</span>
-                  <select aria-label="Status" value={activeCase.status} onChange={e => updateField('status', e.target.value)}
-                    className="text-[12px] font-semibold border-[1.5px] border-gray-200 rounded-full px-3 py-1 cursor-pointer outline-none bg-white text-gray-700 hover:border-[#003087] transition-colors appearance-none">
-                    <option value="ny">🔵 Ny</option>
-                    <option value="open">🟡 Åpen</option>
-                    <option value="waiting">🔷 Venter på kunde</option>
-                    <option value="eskalert">🟠 Eskalert</option>
-                    <option value="closed">🟢 Lukket</option>
-                  </select>
-                  <select aria-label="Prioritet" value={activeCase.priority || 'normal'} onChange={e => updateField('priority', e.target.value)}
-                    className="text-[12px] font-semibold border-[1.5px] border-gray-200 rounded-full px-3 py-1 cursor-pointer outline-none bg-white text-gray-700 hover:border-[#003087] transition-colors appearance-none">
-                    <option value="low">▽ Lav</option>
-                    <option value="normal">◇ Normal</option>
-                    <option value="high">⚠ Høy</option>
-                    <option value="critical">🔴 Kritisk</option>
-                  </select>
-                  <select aria-label="Tildelt saksbehandler" value={activeCase.assigned_to || ''} onChange={e => assignCase(e.target.value)}
-                    className="text-[12px] font-semibold border-[1.5px] border-gray-200 rounded-full px-3 py-1 cursor-pointer outline-none bg-white text-gray-700 hover:border-[#003087] transition-colors appearance-none">
-                    <option value="">👤 Ikke tildelt</option>
-                    {agents.map(a => (
-                      <option key={a.id} value={a.id}>{a.full_name || a.email}</option>
-                    ))}
-                  </select>
+
+                {/* Controls */}
+                <select aria-label="Status" value={activeCase.status} onChange={e => updateField('status', e.target.value)}
+                  className="text-[12px] font-semibold border border-gray-200 rounded-full px-2.5 py-1 cursor-pointer outline-none bg-white text-gray-700 hover:border-[#003087] transition-colors appearance-none">
+                  <option value="ny">🔵 Ny</option>
+                  <option value="open">🟡 Åpen</option>
+                  <option value="waiting">🔷 Venter</option>
+                  <option value="eskalert">🟠 Eskalert</option>
+                  <option value="closed">🟢 Lukket</option>
+                </select>
+                <select aria-label="Prioritet" value={activeCase.priority || 'normal'} onChange={e => updateField('priority', e.target.value)}
+                  className="text-[12px] border border-gray-200 rounded-full px-2.5 py-1 cursor-pointer outline-none bg-white text-gray-600 hover:border-[#003087] transition-colors appearance-none">
+                  <option value="low">▽ Lav</option>
+                  <option value="normal">◇ Normal</option>
+                  <option value="high">⚠ Høy</option>
+                  <option value="critical">🔴 Kritisk</option>
+                </select>
+                <select aria-label="Tildelt" value={activeCase.assigned_to || ''} onChange={e => assignCase(e.target.value)}
+                  className="text-[12px] border border-gray-200 rounded-full px-2.5 py-1 cursor-pointer outline-none bg-white text-gray-600 hover:border-[#003087] transition-colors appearance-none max-w-[140px]">
+                  <option value="">👤 Ikke tildelt</option>
+                  {agents.map(a => <option key={a.id} value={a.id}>{a.full_name || a.email}</option>)}
+                </select>
+
+                {/* ⋯ more menu */}
+                <div className="relative">
+                  <button onClick={() => setShowMoreMenu(v => !v)}
+                    className="text-[13px] px-2.5 py-1 rounded border border-gray-200 bg-white text-gray-400 hover:text-gray-700 hover:border-gray-300 cursor-pointer transition-colors">
+                    ⋯
+                  </button>
+                  {showMoreMenu && (
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1 min-w-[180px]"
+                      onMouseLeave={() => setShowMoreMenu(false)}>
+                      {currentUser?.role === 'senterleder' && activeCase.status !== 'eskalert' && activeCase.status !== 'closed' && (
+                        <button onClick={() => { escalateCase(); setShowMoreMenu(false); }}
+                          className="w-full text-left px-4 py-2 text-[13px] text-orange-700 hover:bg-orange-50 cursor-pointer">
+                          🔺 Eskaler til saksbehandler
+                        </button>
+                      )}
+                      <a href="/eksport"
+                        className="block px-4 py-2 text-[13px] text-gray-700 hover:bg-gray-50 no-underline">
+                        📊 Eksporter sak
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -474,156 +486,186 @@ export default function SaksbehandlingPage() {
                   />
                 </div>
 
-                {/* Right sidebar */}
-                <div className="w-[300px] flex-shrink-0 border-l border-gray-200 bg-[#F8F9FC] overflow-y-auto p-4 flex flex-col gap-3.5">
-                  {/* SLA */}
-                  <div>
-                    <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">SLA-frist</div>
+                {/* Right panel — tabbed */}
+                <div className="w-[272px] flex-shrink-0 border-l border-gray-200 bg-[#F8F9FC] flex flex-col overflow-hidden">
+
+                  {/* SLA — always visible */}
+                  <div className="px-4 pt-3 pb-2.5 border-b border-gray-200 flex-shrink-0">
                     <SLABox c={activeCase} />
-                    <div className="mt-2">
+                    <div className="mt-1.5">
                       <SLATicker c={activeCase} />
                     </div>
                   </div>
 
-                  {/* ML */}
-                  {ML_SUGGESTIONS[activeCase.category] && (
-                    <div>
-                      <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">✦ ML-forslag</div>
-                      <p className="text-[13px] text-gray-700 leading-relaxed mb-2">{ML_SUGGESTIONS[activeCase.category]}</p>
-                      <button onClick={() => useMLSuggestion(ML_SUGGESTIONS[activeCase.category])}
-                        className="text-[12px] font-semibold text-amber-600 border-[1.5px] border-yellow-300 rounded-lg px-3 py-1 hover:bg-yellow-100 transition-colors cursor-pointer bg-transparent">
-                        Bruk dette svaret →
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Kostnad */}
-                  <div>
-                    <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">Kostnadssporing</div>
-                    <div className="grid grid-cols-2 gap-2 mb-1.5">
-                      <div>
-                        <label className="text-[10.5px] text-gray-400 block mb-1">Estimert (kr)</label>
-                        <input type="number" value={costEst} onChange={e => setCostEst(e.target.value)} onBlur={saveCost} placeholder="0"
-                          className="w-full text-[12.5px] px-2 py-1.5 border border-gray-200 rounded-lg outline-none focus:border-[#003087] bg-white" />
-                      </div>
-                      <div>
-                        <label className="text-[10.5px] text-gray-400 block mb-1">Faktisk (kr)</label>
-                        <input type="number" value={costAct} onChange={e => setCostAct(e.target.value)} onBlur={saveCost} placeholder="0"
-                          className="w-full text-[12.5px] px-2 py-1.5 border border-gray-200 rounded-lg outline-none focus:border-[#003087] bg-white" />
-                      </div>
-                    </div>
-                    <div className={`text-[12px] ${costDiff ? costDiffCls : 'text-gray-400'}`}>
-                      {costDiff || 'Fyll inn begge felt'}
-                    </div>
+                  {/* Tab bar */}
+                  <div className="flex border-b border-gray-200 flex-shrink-0 bg-white">
+                    {(['sak', 'okonomi', 'vedlegg'] as const).map(tab => {
+                      const labels: Record<string, string> = { sak: 'Sak', okonomi: 'Økonomi', vedlegg: `Vedlegg${attachments.length ? ` (${attachments.length})` : ''}` };
+                      return (
+                        <button key={tab} onClick={() => setRightTab(tab)}
+                          className={`flex-1 text-[11.5px] font-semibold py-2 border-b-2 transition-colors cursor-pointer
+                            ${rightTab === tab
+                              ? 'border-[#003087] text-[#003087]'
+                              : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                          {labels[tab]}
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {/* Utfall */}
-                  <div>
-                    <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">Utfall ved lukking</div>
-                    <div className="flex flex-col gap-1">
-                      {([
-                        ['approved', 'Godkjent reklamasjon'],
-                        ['partial',  'Delvis godkjent'],
-                        ['rejected', 'Avvist'],
-                        ['dropped',  'Henlagt'],
-                      ] as [CaseOutcome, string][]).map(([val, lbl]) => (
-                        <label key={val}
-                          className={`flex items-center gap-2 text-[13px] cursor-pointer px-1.5 py-1 rounded-lg transition-colors
-                            ${activeCase.outcome === val ? 'font-semibold text-[#003087]' : 'text-gray-600 hover:bg-gray-100'}`}>
-                          <input type="radio" name="outcome" value={val} checked={activeCase.outcome === val}
-                            onChange={() => updateField('outcome', val)}
-                            className="accent-[#003087]" />
-                          {lbl}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                  {/* Tab content */}
+                  <div className="flex-1 overflow-y-auto p-4">
 
-                  {/* Saksinformasjon */}
-                  <div>
-                    <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">Saksinformasjon</div>
-                    <InfoRow label="Opprettet"     value={formatDate(activeCase.created_at)} />
-                    <InfoRow label="Kundetype"     value={activeCase.customer_type} />
-                    <InfoRow label="E-post"        value={<a href={`mailto:${activeCase.customer_email}`} className="text-[#003087] text-xs">{activeCase.customer_email}</a>} />
-                    <InfoRow label="Telefon"       value={activeCase.customer_phone} />
-                    {activeCase.company && <InfoRow label="Bedrift" value={activeCase.company} />}
-                    <InfoRow label="Ønsket løsning" value={activeCase.desired_resolution} />
-                  </div>
-
-                  {/* Kjøretøy */}
-                  <div>
-                    <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">Kjøretøy og verksted</div>
-                    <InfoRow label="Reg.nr"     value={<span className="font-bold tracking-widest font-mono">{activeCase.reg_nr || '–'}</span>} />
-                    <InfoRow label="Senter"     value={activeCase.senter} />
-                    <InfoRow label="Dato besøk" value={formatDate(activeCase.visit_date)} />
-                    <InfoRow label="Ordrenr."   value={activeCase.order_number} />
-                  </div>
-
-                  {/* Vedlegg */}
-                  <div>
-                    <div className="text-[10.5px] font-bold uppercase tracking-widest text-gray-400 mb-2 pb-1.5 border-b border-gray-200">Vedlegg</div>
-                    {attachments.length === 0 ? (
-                      <p className="text-[12px] text-gray-400 mb-2">Ingen vedlegg ennå</p>
-                    ) : (
-                      <div className="flex flex-col gap-1 mb-2">
-                        {attachments.map(a => (
-                          <button
-                            key={a.id}
-                            onClick={() => openAttachment(a)}
-                            className="flex items-center gap-2 text-left w-full text-[12px] text-[#003087] hover:bg-blue-50 rounded-lg px-2 py-1.5 transition-colors cursor-pointer bg-transparent border-none"
-                          >
-                            <span className="flex-shrink-0">{a.mime_type.startsWith('image/') ? '🖼' : '📄'}</span>
-                            <span className="truncate flex-1">{a.file_name}</span>
-                            <span className="text-gray-400 flex-shrink-0 text-[11px]">{formatFileSize(a.file_size)}</span>
-                          </button>
-                        ))}
+                    {/* SAK TAB */}
+                    {rightTab === 'sak' && (
+                      <div className="flex flex-col gap-4">
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Kontakt</div>
+                          <InfoRow label="Navn"    value={activeCase.customer_name} />
+                          <InfoRow label="E-post"  value={<a href={`mailto:${activeCase.customer_email}`} className="text-[#003087] text-xs hover:underline">{activeCase.customer_email}</a>} />
+                          <InfoRow label="Telefon" value={activeCase.customer_phone} />
+                          {activeCase.company && <InfoRow label="Bedrift" value={activeCase.company} />}
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Sak</div>
+                          <InfoRow label="Opprettet"     value={formatDate(activeCase.created_at)} />
+                          <InfoRow label="Kundetype"     value={activeCase.customer_type} />
+                          <InfoRow label="Ønsket løsning" value={activeCase.desired_resolution} />
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Kjøretøy</div>
+                          <InfoRow label="Reg.nr"     value={<span className="font-bold tracking-widest font-mono text-[12px]">{activeCase.reg_nr || '–'}</span>} />
+                          <InfoRow label="Senter"     value={activeCase.senter} />
+                          <InfoRow label="Besøksdato" value={formatDate(activeCase.visit_date)} />
+                          <InfoRow label="Ordrenr."   value={activeCase.order_number} />
+                        </div>
+                        {ML_SUGGESTIONS[activeCase.category] && (
+                          <div className="bg-amber-50 border border-yellow-200 rounded-lg p-3">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-1.5">✦ ML-forslag</div>
+                            <p className="text-[12px] text-amber-900 leading-relaxed mb-2">{ML_SUGGESTIONS[activeCase.category]}</p>
+                            <button onClick={() => useMLSuggestion(ML_SUGGESTIONS[activeCase.category])}
+                              className="text-[11.5px] font-semibold text-amber-700 border border-yellow-300 rounded-md px-2.5 py-1 hover:bg-yellow-100 transition-colors cursor-pointer bg-transparent">
+                              Bruk svaret →
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
-                    <label className={`text-[12px] font-semibold border-[1.5px] rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1.5 w-full justify-center
-                      ${uploading
-                        ? 'text-gray-400 border-gray-200 cursor-not-allowed'
-                        : 'text-[#003087] border-[#003087]/30 hover:bg-blue-50 cursor-pointer'}`}>
-                      {uploading ? '📎 Laster opp...' : '📎 Last opp fil'}
-                      <input
-                        type="file"
-                        multiple
-                        accept=".jpg,.jpeg,.png,.pdf"
-                        className="hidden"
-                        disabled={uploading}
-                        onChange={handleAgentFileUpload}
-                      />
-                    </label>
-                    {attachmentError && (
-                      <p className="text-red-600 text-[11px] mt-1">{attachmentError}</p>
+
+                    {/* ØKONOMI TAB */}
+                    {rightTab === 'okonomi' && (
+                      <div className="flex flex-col gap-4">
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Kostnadssporing</div>
+                          <div className="grid grid-cols-2 gap-2 mb-2">
+                            <div>
+                              <label className="text-[10.5px] text-gray-400 block mb-1">Estimert (kr)</label>
+                              <input type="number" value={costEst} onChange={e => setCostEst(e.target.value)} onBlur={saveCost} placeholder="0"
+                                className="w-full text-[13px] px-2.5 py-2 border border-gray-200 rounded-lg outline-none focus:border-[#003087] bg-white" />
+                            </div>
+                            <div>
+                              <label className="text-[10.5px] text-gray-400 block mb-1">Faktisk (kr)</label>
+                              <input type="number" value={costAct} onChange={e => setCostAct(e.target.value)} onBlur={saveCost} placeholder="0"
+                                className="w-full text-[13px] px-2.5 py-2 border border-gray-200 rounded-lg outline-none focus:border-[#003087] bg-white" />
+                            </div>
+                          </div>
+                          {costDiff && (
+                            <div className={`text-[13px] font-semibold ${costDiffCls}`}>{costDiff}</div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Utfall ved lukking</div>
+                          <div className="flex flex-col gap-1">
+                            {([
+                              ['approved', '✅ Godkjent reklamasjon'],
+                              ['partial',  '🟡 Delvis godkjent'],
+                              ['rejected', '❌ Avvist'],
+                              ['dropped',  '📁 Henlagt'],
+                            ] as [CaseOutcome, string][]).map(([val, lbl]) => (
+                              <label key={val}
+                                className={`flex items-center gap-2 text-[13px] cursor-pointer px-2 py-1.5 rounded-lg transition-colors
+                                  ${activeCase.outcome === val ? 'bg-blue-50 font-semibold text-[#003087]' : 'text-gray-600 hover:bg-gray-100'}`}>
+                                <input type="radio" name="outcome" value={val} checked={activeCase.outcome === val}
+                                  onChange={() => updateField('outcome', val)} className="accent-[#003087]" />
+                                {lbl}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* VEDLEGG TAB */}
+                    {rightTab === 'vedlegg' && (
+                      <div className="flex flex-col gap-3">
+                        {attachments.length === 0 ? (
+                          <p className="text-[13px] text-gray-400 py-4 text-center">Ingen vedlegg ennå</p>
+                        ) : (
+                          attachments.map(a => (
+                            <button key={a.id} onClick={() => openAttachment(a)}
+                              className="flex items-center gap-2.5 text-left w-full text-[12.5px] text-[#003087] hover:bg-blue-50 rounded-lg px-2.5 py-2 transition-colors cursor-pointer bg-transparent border border-gray-100">
+                              <span className="text-[16px] flex-shrink-0">{a.mime_type.startsWith('image/') ? '🖼' : '📄'}</span>
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate font-medium">{a.file_name}</div>
+                                <div className="text-[11px] text-gray-400">{formatFileSize(a.file_size)}</div>
+                              </div>
+                            </button>
+                          ))
+                        )}
+                        <label className={`mt-1 text-[12.5px] font-semibold border-[1.5px] rounded-lg px-3 py-2 transition-colors flex items-center gap-1.5 justify-center
+                          ${uploading ? 'text-gray-400 border-gray-200 cursor-not-allowed' : 'text-[#003087] border-[#003087]/30 hover:bg-blue-50 cursor-pointer'}`}>
+                          {uploading ? '📎 Laster opp...' : '📎 Last opp fil'}
+                          <input type="file" multiple accept=".jpg,.jpeg,.png,.pdf" className="hidden" disabled={uploading} onChange={handleAgentFileUpload} />
+                        </label>
+                        {attachmentError && <p className="text-red-600 text-[11px]">{attachmentError}</p>}
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Reply area */}
-              <div className="bg-[#F8F9FC] border-t border-gray-200 px-5 py-3 flex-shrink-0">
-                <div className="flex gap-1.5 mb-2">
-                  <button onClick={() => setReplyType('email')}
-                    className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg border-[1.5px] cursor-pointer transition-colors
-                      ${replyType === 'email' ? 'bg-[#003087] border-[#003087] text-white' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                    📧 Svar til kunde
-                  </button>
-                  <button onClick={() => setReplyType('internal')}
-                    className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg border-[1.5px] cursor-pointer transition-colors
-                      ${replyType === 'internal' ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                    🔒 Internt notat
-                  </button>
-                </div>
-                <div className="flex gap-2 items-end">
+              {/* Reply area — compose box */}
+              <div className="bg-[#F8F9FC] border-t border-gray-200 px-4 py-3 flex-shrink-0">
+                <div className={`rounded-xl border-2 bg-white overflow-hidden transition-colors
+                  ${replyType === 'internal' ? 'border-amber-300' : 'border-[#003087]/20 focus-within:border-[#003087]/50'}`}>
+                  {/* Mode tabs */}
+                  <div className={`flex border-b ${replyType === 'internal' ? 'border-amber-200 bg-amber-50/60' : 'border-gray-100'}`}>
+                    <button onClick={() => setReplyType('email')}
+                      className={`text-[12px] font-semibold px-4 py-2 border-b-2 transition-colors cursor-pointer
+                        ${replyType === 'email'
+                          ? 'border-[#003087] text-[#003087] bg-white'
+                          : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                      📧 Svar til kunde
+                    </button>
+                    <button onClick={() => setReplyType('internal')}
+                      className={`text-[12px] font-semibold px-4 py-2 border-b-2 transition-colors cursor-pointer
+                        ${replyType === 'internal'
+                          ? 'border-amber-500 text-amber-700 bg-white'
+                          : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                      🔒 Internt notat
+                    </button>
+                    <div className="flex-1" />
+                    <span className="text-[10.5px] text-gray-300 self-center pr-3 select-none hidden sm:block">⌘↵ for å sende</span>
+                  </div>
+                  {/* Textarea */}
                   <textarea value={replyText} onChange={e => setReplyText(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) sendReply(); }}
-                    placeholder={replyType === 'email' ? 'Skriv svar til kunden...' : 'Skriv internt notat...'}
-                    className="flex-1 text-[13.5px] border-[1.5px] border-gray-200 rounded-xl px-3.5 py-2.5 resize-none outline-none min-h-[62px] leading-relaxed focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/8 bg-white" />
-                  <button onClick={sendReply} disabled={!replyText.trim()}
-                    className={`h-10 px-4 rounded-xl text-white font-semibold text-sm cursor-pointer transition-colors disabled:opacity-40
-                      ${replyType === 'internal' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-[#003087] hover:bg-[#001f5c]'}`}>
-                    Send
-                  </button>
+                    placeholder={replyType === 'email' ? 'Skriv svar til kunden…' : 'Skriv internt notat…'}
+                    className={`w-full text-[13.5px] px-4 py-3 resize-none outline-none min-h-[110px] leading-relaxed bg-transparent
+                      ${replyType === 'internal' ? 'placeholder-amber-300' : 'placeholder-gray-300'}`} />
+                  {/* Footer */}
+                  <div className={`flex items-center justify-between px-3 py-2 border-t ${replyType === 'internal' ? 'border-amber-100 bg-amber-50/40' : 'border-gray-100'}`}>
+                    <span className="text-[11px] text-gray-300 select-none">
+                      {replyType === 'email' ? `Til: ${activeCase.customer_email}` : 'Vises kun for saksbehandlere'}
+                    </span>
+                    <button onClick={sendReply} disabled={!replyText.trim()}
+                      className={`px-5 py-1.5 rounded-lg text-white font-semibold text-[13px] cursor-pointer transition-all disabled:opacity-35 disabled:cursor-not-allowed
+                        ${replyType === 'internal'
+                          ? 'bg-amber-500 hover:bg-amber-600 active:scale-95'
+                          : 'bg-[#003087] hover:bg-[#001f5c] active:scale-95'}`}>
+                      Send →
+                    </button>
+                  </div>
                 </div>
               </div>
 
