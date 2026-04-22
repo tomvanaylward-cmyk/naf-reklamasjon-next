@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, getCurrentUser, formatDate, STATUS_LABEL, PRIO_LABEL } from '@/lib/supabase';
 import { ML_SUGGESTIONS } from '@/lib/ml-suggestions';
-import type { Case, Message, Profile, CaseStatus, CasePriority, CaseOutcome, Attachment } from '@/lib/types';
+import type { Case, Message, Profile, CaseStatus, CasePriority, CaseOutcome, Attachment, Template } from '@/lib/types';
 import { uploadAttachmentAuthenticated, getSignedUrl, validateFile, formatFileSize, MAX_FILES } from '@/lib/attachments';
 import Navbar from '@/components/Navbar';
 import StatusBadge from '@/components/StatusBadge';
@@ -35,9 +35,23 @@ export default function SaksbehandlingPage() {
   const [costAct, setCostAct]           = useState('');
   const [rightTab, setRightTab]         = useState<'sak' | 'okonomi' | 'vedlegg'>('sak');
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [search, setSearch]             = useState('');
+  const [templates, setTemplates]       = useState<Template[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
   const tlRef = useRef<HTMLDivElement>(null);
 
-  const filteredCases = filter === 'alle' ? allCases : allCases.filter(c => c.status === filter);
+  const statusFiltered = filter === 'alle' ? allCases : allCases.filter(c => c.status === filter);
+  const filteredCases = useMemo(() => {
+    const q = search.trim().toLowerCase().replace(/\s/g, '');
+    if (!q) return statusFiltered;
+    return statusFiltered.filter(c => {
+      const hay = [
+        c.customer_name, c.customer_email, c.case_id, c.category,
+        c.senter, c.reg_nr, c.company, c.order_number, c.description,
+      ].filter(Boolean).join(' ').toLowerCase().replace(/\s/g, '');
+      return hay.includes(q);
+    });
+  }, [statusFiltered, search]);
   const activeCaseIdx = activeCase ? filteredCases.findIndex(c => c.id === activeCase.id) : -1;
 
   const loadCases = useCallback(async () => {
@@ -58,6 +72,11 @@ export default function SaksbehandlingPage() {
         .in('role', ['saksbehandler', 'admin'])
         .order('full_name');
       setAgents((agentData as Profile[]) || []);
+      const { data: tplData } = await db
+        .from('templates')
+        .select('*')
+        .order('name', { ascending: true });
+      setTemplates((tplData as Template[]) || []);
     })();
   }, [router, loadCases]);
 
@@ -266,6 +285,41 @@ export default function SaksbehandlingPage() {
     setReplyText(text);
   }
 
+  function applyTemplate(t: Template) {
+    if (!activeCase) return;
+    const firstName = (activeCase.customer_name || '').split(' ')[0] || activeCase.customer_name || '';
+    const body = t.body
+      .replaceAll('{{navn}}',     firstName)
+      .replaceAll('{{fullnavn}}', activeCase.customer_name || '')
+      .replaceAll('{{case_id}}',  activeCase.case_id       || '')
+      .replaceAll('{{reg_nr}}',   activeCase.reg_nr        || '')
+      .replaceAll('{{senter}}',   (activeCase.senter || '').replace('NAF ', ''))
+      .replaceAll('{{kategori}}', activeCase.category      || '');
+    setReplyText(body);
+    setShowTemplates(false);
+  }
+
+  async function saveAsTemplate() {
+    if (!replyText.trim() || !currentUser) return;
+    const name = window.prompt('Navn på malen:');
+    if (!name || !name.trim()) return;
+    const { data, error } = await db.from('templates').insert({
+      name:       name.trim(),
+      category:   activeCase?.category ?? null,
+      body:       replyText,
+      created_by: currentUser.id,
+    }).select().single();
+    if (error) { alert('Kunne ikke lagre mal: ' + error.message); return; }
+    if (data) setTemplates(prev => [...prev, data as Template].sort((a, b) => a.name.localeCompare(b.name)));
+  }
+
+  async function deleteTemplate(id: string) {
+    if (!confirm('Slette denne malen?')) return;
+    const { error } = await db.from('templates').delete().eq('id', id);
+    if (error) { alert('Kunne ikke slette: ' + error.message); return; }
+    setTemplates(prev => prev.filter(t => t.id !== id));
+  }
+
   // Cost difference display
   const est = parseFloat(costEst) || 0;
   const act = parseFloat(costAct) || 0;
@@ -312,7 +366,32 @@ export default function SaksbehandlingPage() {
         {/* Sidebar */}
         <div className="w-[290px] flex-shrink-0 bg-[#F8F9FC] border-r border-gray-200 flex flex-col overflow-hidden">
           <div className="p-3.5 border-b border-gray-200">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5">Saker</div>
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Saker</div>
+              {search && (
+                <span className="text-[10.5px] text-gray-400">{filteredCases.length} treff</span>
+              )}
+            </div>
+            {/* Search */}
+            <div className="relative mb-2.5">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-gray-300 pointer-events-none">🔍</span>
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Søk navn, reg.nr., sak…"
+                className="w-full text-[12.5px] pl-7 pr-7 py-1.5 border border-gray-200 rounded-lg bg-white outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 placeholder-gray-300"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  aria-label="Tøm søk"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-gray-300 hover:text-gray-600 cursor-pointer bg-transparent border-none"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             {/* Stats */}
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
               {[['Åpne', openCount], ['Nye', newCount], ['Lukket', closedCount]].map(([label, count]) => (
@@ -654,12 +733,86 @@ export default function SaksbehandlingPage() {
                     className={`w-full text-[13.5px] px-4 py-3 resize-none outline-none min-h-[110px] leading-relaxed bg-transparent
                       ${replyType === 'internal' ? 'placeholder-amber-300' : 'placeholder-gray-300'}`} />
                   {/* Footer */}
-                  <div className={`flex items-center justify-between px-3 py-2 border-t ${replyType === 'internal' ? 'border-amber-100 bg-amber-50/40' : 'border-gray-100'}`}>
-                    <span className="text-[11px] text-gray-300 select-none">
-                      {replyType === 'email' ? `Til: ${activeCase.customer_email}` : 'Vises kun for saksbehandlere'}
-                    </span>
+                  <div className={`flex items-center justify-between gap-2 px-3 py-2 border-t ${replyType === 'internal' ? 'border-amber-100 bg-amber-50/40' : 'border-gray-100'}`}>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      {replyType === 'email' && (
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowTemplates(v => !v)}
+                            className="text-[11.5px] font-semibold text-[#003087] border border-[#003087]/20 rounded-md px-2 py-1 hover:bg-[#003087]/5 cursor-pointer bg-white transition-colors"
+                          >
+                            📋 Maler {templates.length > 0 && <span className="text-gray-400 font-normal">· {templates.length}</span>}
+                          </button>
+                          {showTemplates && (
+                            <div
+                              className="absolute left-0 bottom-full mb-2 bg-white border border-gray-200 rounded-xl shadow-lg z-30 w-[340px] max-h-[360px] overflow-y-auto"
+                              onMouseLeave={() => setShowTemplates(false)}
+                            >
+                              {templates.length === 0 ? (
+                                <div className="p-4 text-[12px] text-gray-400 text-center">
+                                  Ingen maler enda. Skriv et svar og trykk «Lagre som mal».
+                                </div>
+                              ) : (
+                                <>
+                                  {(() => {
+                                    const cat = activeCase.category;
+                                    const match = templates.filter(t => t.category === cat);
+                                    const generic = templates.filter(t => t.category === null);
+                                    const other = templates.filter(t => t.category && t.category !== cat);
+                                    const sections: [string, Template[]][] = [
+                                      [`For ${cat}`, match],
+                                      ['Generelle',  generic],
+                                      ['Andre',      other],
+                                    ].filter(([, arr]) => arr.length > 0) as [string, Template[]][];
+                                    return sections.map(([label, arr]) => (
+                                      <div key={label}>
+                                        <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-3 pt-3 pb-1.5 sticky top-0 bg-white border-b border-gray-100">
+                                          {label}
+                                        </div>
+                                        {arr.map(t => (
+                                          <div
+                                            key={t.id}
+                                            className="group flex items-start gap-2 px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-b-0"
+                                            onClick={() => applyTemplate(t)}
+                                          >
+                                            <div className="flex-1 min-w-0">
+                                              <div className="text-[12.5px] font-semibold text-gray-800 truncate">{t.name}</div>
+                                              <div className="text-[11px] text-gray-400 line-clamp-2">{t.body.replace(/\s+/g, ' ').slice(0, 110)}…</div>
+                                            </div>
+                                            {t.created_by === currentUser?.id && (
+                                              <button
+                                                onClick={e => { e.stopPropagation(); deleteTemplate(t.id); }}
+                                                className="opacity-0 group-hover:opacity-100 text-[11px] text-gray-300 hover:text-red-600 px-1 cursor-pointer bg-transparent border-none flex-shrink-0"
+                                                aria-label="Slett mal"
+                                              >
+                                                ✕
+                                              </button>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ));
+                                  })()}
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {replyType === 'email' && replyText.trim().length > 20 && (
+                        <button
+                          onClick={saveAsTemplate}
+                          className="text-[11px] text-gray-400 hover:text-[#003087] cursor-pointer bg-transparent border-none underline-offset-2 hover:underline"
+                        >
+                          Lagre som mal
+                        </button>
+                      )}
+                      <span className="text-[11px] text-gray-300 select-none truncate">
+                        {replyType === 'email' ? `Til: ${activeCase.customer_email}` : 'Vises kun for saksbehandlere'}
+                      </span>
+                    </div>
                     <button onClick={sendReply} disabled={!replyText.trim()}
-                      className={`px-5 py-1.5 rounded-lg text-white font-semibold text-[13px] cursor-pointer transition-all disabled:opacity-35 disabled:cursor-not-allowed
+                      className={`px-5 py-1.5 rounded-lg text-white font-semibold text-[13px] cursor-pointer transition-all disabled:opacity-35 disabled:cursor-not-allowed flex-shrink-0
                         ${replyType === 'internal'
                           ? 'bg-amber-500 hover:bg-amber-600 active:scale-95'
                           : 'bg-[#003087] hover:bg-[#001f5c] active:scale-95'}`}>
