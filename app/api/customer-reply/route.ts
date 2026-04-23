@@ -50,10 +50,11 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!caseRow) {
-      return NextResponse.json({ error: 'Sak ikke funnet' }, { status: 404 });
+      return NextResponse.json({ error: 'Ugyldig lenke' }, { status: 403 });
     }
 
-    // Timing-safe token comparison (both buffers are always 36 bytes — UUID is fixed length)
+    // Timing-safe token comparison. Both are 36 bytes when reply_token is a valid UUID.
+    // The length check below guards against a null/empty reply_token in the database.
     const tokenA = Buffer.from(token);
     const tokenB = Buffer.from(caseRow.reply_token ?? '');
     const valid =
