@@ -39,31 +39,69 @@ export default function EksportPage() {
   async function exportExcel() {
     setLoading(true);
     try {
-      const XLSX = await import('xlsx');
-      const { utils, writeFile } = XLSX;
+      const ExcelJS = (await import('exceljs')).default;
       const cases = await fetchFilteredCases();
-      const rows = cases.map(c => ({
-        'Saksnummer': c.case_id,
-        'Kunde': c.customer_name,
-        'E-post': c.customer_email,
-        'Telefon': c.customer_phone || '',
-        'Kategori': c.category,
-        'Senter': c.senter || '',
-        'Status': STATUS_LABEL[c.status] || c.status,
-        'Prioritet': PRIO_LABEL[c.priority] || c.priority,
-        'Opprettet': formatDate(c.created_at),
-        'SLA-frist': formatDate(c.sla_deadline),
-        'Utfall': c.outcome || '',
-        'Est. kostnad (kr)': c.cost_estimated || '',
-        'Faktisk kostnad (kr)': c.cost_actual || '',
-        'Reg.nr': c.reg_nr || '',
-        'Ordrenr': c.order_number || '',
-        'Beskrivelse': c.description || '',
-      }));
-      const ws = utils.json_to_sheet(rows);
-      const wb = utils.book_new();
-      utils.book_append_sheet(wb, ws, 'Saker');
-      writeFile(wb, `naf-reklamasjon-eksport-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Saker');
+
+      ws.columns = [
+        { header: 'Saksnummer',           key: 'case_id',          width: 20 },
+        { header: 'Kunde',                key: 'customer_name',    width: 25 },
+        { header: 'E-post',               key: 'customer_email',   width: 30 },
+        { header: 'Telefon',              key: 'customer_phone',   width: 18 },
+        { header: 'Kategori',             key: 'category',         width: 22 },
+        { header: 'Senter',               key: 'senter',           width: 22 },
+        { header: 'Status',               key: 'status',           width: 14 },
+        { header: 'Prioritet',            key: 'priority',         width: 12 },
+        { header: 'Opprettet',            key: 'created_at',       width: 20 },
+        { header: 'SLA-frist',            key: 'sla_deadline',     width: 20 },
+        { header: 'Utfall',               key: 'outcome',          width: 20 },
+        { header: 'Est. kostnad (kr)',     key: 'cost_estimated',   width: 18 },
+        { header: 'Faktisk kostnad (kr)', key: 'cost_actual',      width: 18 },
+        { header: 'Reg.nr',              key: 'reg_nr',            width: 14 },
+        { header: 'Ordrenr',             key: 'order_number',      width: 14 },
+        { header: 'Beskrivelse',          key: 'description',      width: 40 },
+      ];
+
+      // Style header row — NAF blue
+      ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      ws.getRow(1).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF003087' },
+      };
+
+      for (const c of cases) {
+        ws.addRow({
+          case_id:          c.case_id,
+          customer_name:    c.customer_name,
+          customer_email:   c.customer_email,
+          customer_phone:   c.customer_phone || '',
+          category:         c.category,
+          senter:           c.senter || '',
+          status:           STATUS_LABEL[c.status] || c.status,
+          priority:         PRIO_LABEL[c.priority] || c.priority,
+          created_at:       formatDate(c.created_at),
+          sla_deadline:     formatDate(c.sla_deadline),
+          outcome:          c.outcome || '',
+          cost_estimated:   c.cost_estimated || '',
+          cost_actual:      c.cost_actual || '',
+          reg_nr:           c.reg_nr || '',
+          order_number:     c.order_number || '',
+          description:      c.description || '',
+        });
+      }
+
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `naf-reklamasjon-eksport-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
     } finally {
       setLoading(false);
     }
