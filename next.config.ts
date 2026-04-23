@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
 
-const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL.trim()).host
-  : '*.supabase.co';
+function getSupabaseHost(): string {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!raw) return '*.supabase.co';
+  try {
+    return new URL(raw.trim()).host;
+  } catch {
+    console.warn('[next.config] Invalid NEXT_PUBLIC_SUPABASE_URL — using wildcard fallback');
+    return '*.supabase.co';
+  }
+}
+const SUPABASE_HOST = getSupabaseHost();
 
 const CSP = [
   "default-src 'self'",
@@ -20,6 +28,7 @@ const CSP = [
   "base-uri 'self'",
   "form-action 'self'",
   "upgrade-insecure-requests",
+  "script-src-attr 'none'",
 ].join('; ');
 
 const nextConfig: NextConfig = {
