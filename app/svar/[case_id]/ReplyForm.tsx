@@ -1,6 +1,6 @@
 // app/svar/[case_id]/ReplyForm.tsx
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Message } from '@/lib/types';
 import { formatDate } from '@/lib/supabase';
 import { validateFile, formatFileSize } from '@/lib/attachments';
@@ -20,6 +20,12 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
   const [done,       setDone]       = useState(false);
   const [error,      setError]      = useState('');
 
+  // Read token once at mount — avoids re-reading if the URL ever changes client-side
+  const token = useMemo(
+    () => new URLSearchParams(window.location.search).get('token') ?? '',
+    [],
+  );
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
     e.target.value = '';
@@ -32,44 +38,46 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim()) return;
+    const trimmed = content.trim();
+    if (!trimmed) return;
     setSubmitting(true);
     setError('');
 
-    // Read token from query string (it was validated server-side, but we need it for the POST)
-    const token = new URLSearchParams(window.location.search).get('token') ?? '';
+    try {
+      // 1. Submit text reply
+      const res = await fetch('/api/customer-reply', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ case_id: caseId, token, content: trimmed }),
+      });
 
-    // 1. Submit text reply
-    const res = await fetch('/api/customer-reply', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ case_id: caseId, token, content }),
-    });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError((data as { error?: string }).error ?? 'Noe gikk galt. Prøv igjen.');
+        return;
+      }
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError((data as { error?: string }).error ?? 'Noe gikk galt. Prøv igjen.');
+      // 2. Upload file if selected — fire and forget, don't block success message
+      if (file) {
+        const fd = new FormData();
+        fd.append('case_id', caseId);
+        fd.append('files', file);
+        fetch('/api/attachments/upload', { method: 'POST', body: fd }).catch(() => {});
+      }
+
+      setDone(true);
+    } catch {
+      setError('Nettverksfeil. Sjekk internettforbindelsen og prøv igjen.');
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    // 2. Upload file if selected — fire and forget, don't block success message
-    if (file) {
-      const fd = new FormData();
-      fd.append('case_id', caseId);
-      fd.append('files', file);
-      fetch('/api/attachments/upload', { method: 'POST', body: fd }).catch(() => {});
-    }
-
-    setDone(true);
-    setSubmitting(false);
   }
 
   // ── Success state ────────────────────────────────────────────────────────
   if (done) {
     return (
       <div className="px-6 py-12 text-center">
-        <div className="text-4xl mb-4">✅</div>
+        <div className="text-4xl mb-4" aria-hidden="true">✅</div>
         <h2 className="text-[16px] font-bold text-gray-900 mb-2">Takk for svaret ditt!</h2>
         <p className="text-[13px] text-gray-500 leading-relaxed">
           Vi behandler meldingen og kommer tilbake til deg så snart som mulig.
@@ -82,7 +90,7 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
   return (
     <form onSubmit={handleSubmit} className="p-6">
 
-      {/* Previous messages for context */}
+      {/* Previous messages for context (parent passes at most 3) */}
       {messages.length > 0 && (
         <div className="mb-5">
           <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
@@ -115,7 +123,7 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
         </label>
         <textarea
           value={content}
-          onChange={e => setContent(e.target.value)}
+          onChange={e => { setContent(e.target.value); setError(''); }}
           placeholder="Skriv din melding her…"
           required
           maxLength={5000}
@@ -137,12 +145,12 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
         {file ? (
           <div className="flex items-center gap-2 text-[12.5px] text-gray-700
                           bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-            <span className="text-base">{file.type.startsWith('image/') ? '🖼' : '📄'}</span>
+            <span className="text-base" aria-hidden="true">{file.type.startsWith('image/') ? '🖼' : '📄'}</span>
             <span className="flex-1 truncate">{file.name}</span>
             <span className="text-gray-400 flex-shrink-0">{formatFileSize(file.size)}</span>
             <button
               type="button"
-              onClick={() => setFile(null)}
+              onClick={() => { setFile(null); setFileError(''); }}
               className="text-gray-400 hover:text-red-600 cursor-pointer bg-transparent border-none"
               aria-label="Fjern vedlegg"
             >
@@ -153,7 +161,8 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
           <label className="flex items-center gap-2 text-[12.5px] font-semibold text-[#003087]
                             border-[1.5px] border-[#003087]/30 rounded-lg px-3 py-2
                             hover:bg-blue-50 cursor-pointer w-fit transition-colors">
-            📎 Legg til fil
+            <span aria-hidden="true">📎</span>
+            Legg til fil
             <span className="text-gray-400 font-normal text-[11.5px]">JPG, PNG, PDF · maks 10 MB</span>
             <input
               type="file"
