@@ -61,7 +61,8 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
       if (file) {
         const fd = new FormData();
         fd.append('case_id', caseId);
-        fd.append('files', file);
+        fd.append('token',   token);   // validated server-side against cases.reply_token
+        fd.append('files',   file);
         fetch('/api/attachments/upload', { method: 'POST', body: fd }).catch(() => {});
       }
 
