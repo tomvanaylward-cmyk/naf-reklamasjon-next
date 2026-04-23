@@ -72,8 +72,42 @@ export async function POST(req: NextRequest) {
 
     if (type === 'agent_reply') {
       const { caseId, replyContent, fromName } = body;
+
+      // Fetch reply_token so we can include the reply portal link
+      const { data: caseRow } = await adminDb
+        .from('cases')
+        .select('reply_token')
+        .eq('case_id', caseId)
+        .single();
+
+      const replyUrl = caseRow?.reply_token
+        ? `${BASE_URL}/svar/${encodeURIComponent(caseId)}?token=${caseRow.reply_token}`
+        : null;
+
       subject = `Re: Din reklamasjon ${esc(caseId)} – NAF`;
-      html    = `<p>Hei,</p><p>${esc(replyContent)}</p><p>Med vennlig hilsen,<br>${esc(fromName)}<br>NAF Reklamasjonsservice</p>`;
+      html    = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto">
+          ${nafHeader('Reklamasjonssystem')}
+          <div style="background:white;border:1px solid #E5E7EB;border-radius:0 0 8px 8px;padding:24px">
+            <p style="font-size:14px;color:#374151;line-height:1.6;white-space:pre-wrap">${esc(replyContent)}</p>
+            <p style="font-size:14px;color:#6B7280;margin-top:16px">
+              Med vennlig hilsen,<br>
+              <strong>${esc(fromName)}</strong><br>
+              NAF Reklamasjonsservice
+            </p>
+            ${replyUrl ? `
+            <hr style="border:none;border-top:1px solid #E5E7EB;margin:24px 0">
+            <p style="font-size:13px;color:#6B7280;margin:0 0 12px">Vil du svare på denne meldingen?</p>
+            <a href="${replyUrl}"
+               style="background:#003087;color:white;text-decoration:none;
+                      padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px">
+              Svar på reklamasjonen →
+            </a>
+            <p style="font-size:11px;color:#9CA3AF;margin:16px 0 0">
+              Lenken er personlig og gjelder kun for denne saken.
+            </p>` : ''}
+          </div>
+        </div>`;
       await sgMail.send({ to, from: FROM, subject, html });
 
     } else if (type === 'escalation_notify') {
