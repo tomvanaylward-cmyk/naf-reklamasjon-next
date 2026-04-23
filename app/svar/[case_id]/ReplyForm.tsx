@@ -7,8 +7,8 @@ import { validateFile, formatFileSize } from '@/lib/attachments';
 
 interface Props {
   caseId:       string;   // human-readable e.g. "NAF-202604-8440"
-  caseUuid:     string;   // UUID for file upload route
-  customerName: string;
+  caseUuid:     string;   // UUID (unused — /api/attachments/upload resolves human-readable ID server-side)
+  customerName: string;   // reserved for future greeting / personalisation
   messages:     Pick<Message, 'id' | 'type' | 'sender_name' | 'content' | 'created_at'>[];
 }
 
@@ -89,7 +89,7 @@ export default function ReplyForm({ caseId, caseUuid: _caseUuid, customerName: _
             Tidligere meldinger
           </div>
           <div className="flex flex-col gap-2">
-            {messages.map(m => (
+            {messages.slice(-3).map(m => (
               <div
                 key={m.id}
                 className={`text-[12px] rounded-lg px-3 py-2.5 ${
