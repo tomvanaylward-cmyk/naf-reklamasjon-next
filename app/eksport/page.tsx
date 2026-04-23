@@ -38,9 +38,17 @@ export default function EksportPage() {
 
   async function exportExcel() {
     setLoading(true);
+    let url = '';
     try {
       const ExcelJS = (await import('exceljs')).default;
       const cases = await fetchFilteredCases();
+
+      if (cases.length === 0) {
+        alert('Ingen saker funnet med gjeldende filter.');
+        setLoading(false);
+        return;
+      }
+
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Saker');
 
@@ -96,13 +104,16 @@ export default function EksportPage() {
       const blob = new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
-      const url = URL.createObjectURL(blob);
+      url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `naf-reklamasjon-eksport-${new Date().toISOString().slice(0, 10)}.xlsx`;
       a.click();
-      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Excel export failed:', err);
+      alert('Eksport feilet. Prøv igjen.');
     } finally {
+      if (url) URL.revokeObjectURL(url);
       setLoading(false);
     }
   }
