@@ -27,6 +27,7 @@ export interface Case {
   cost_estimated: number | null;
   cost_actual: number | null;
   sla_deadline: string | null;
+  reply_token: string | null;
   created_at: string;
   updated_at: string | null;
 }
