@@ -47,7 +47,12 @@ async function checkRateLimit(req: NextRequest): Promise<NextResponse | null> {
       prefix: 'naf-rl',
     });
 
-    const ip       = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const ip       = (
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      req.headers.get('cf-connecting-ip') ||
+      req.headers.get('x-real-ip') ||
+      'unknown'
+    );
     const key      = `${pathname}:${ip}`;
     const { success, limit, remaining, reset } = await limiter.limit(key);
 
