@@ -12,11 +12,12 @@ export default async function SvarPage({ params, searchParams }: Props) {
   const { case_id }  = await params;
   const { token }    = await searchParams;
 
-  const { data: caseRow } = await adminDb
+  const { data: caseRow, error: caseErr } = await adminDb
     .from('cases')
     .select('id, case_id, status, reply_token, customer_name, category, senter')
     .eq('case_id', case_id)
     .single();
+  if (caseErr) console.error('[svar] case lookup failed:', caseErr.message);
 
   // Invalid case or token mismatch — show same generic error for both (don't reveal which)
   if (!caseRow || !token || token !== caseRow.reply_token) {
@@ -27,13 +28,14 @@ export default async function SvarPage({ params, searchParams }: Props) {
     return <ClosedState />;
   }
 
-  const { data: msgs } = await adminDb
+  const { data: msgs, error: msgsErr } = await adminDb
     .from('messages')
     .select('id, type, sender_name, content, created_at')
     .eq('case_id', caseRow.id)
     .not('type', 'eq', 'internal')   // never show internal notes to customers
     .order('created_at', { ascending: false })
     .limit(3);
+  if (msgsErr) console.error('[svar] messages lookup failed:', msgsErr.message);
 
   const contextMessages = ((msgs ?? []) as Pick<Message, 'id' | 'type' | 'sender_name' | 'content' | 'created_at'>[]).reverse();
 
