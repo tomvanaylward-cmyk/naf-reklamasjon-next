@@ -7,7 +7,6 @@ import { ML_SUGGESTIONS } from '@/lib/ml-suggestions';
 import type { Case, Message, Profile, CaseStatus, CasePriority, CaseOutcome, Attachment, Template } from '@/lib/types';
 import { uploadAttachmentAuthenticated, getSignedUrl, validateFile, formatFileSize, MAX_FILES } from '@/lib/attachments';
 import Navbar from '@/components/Navbar';
-import StatusBadge from '@/components/StatusBadge';
 import InfoRow from '@/components/InfoRow';
 import Timeline from '@/components/Timeline';
 import SLABox from '@/components/SLABox';
@@ -16,6 +15,25 @@ import SLATicker from '@/components/SLATicker';
 const PRIO_COLORS: Record<string, string> = {
   high: '#EF4444', critical: '#7C2D12', normal: '#9CA3AF', low: '#10B981'
 };
+
+const STATUS_BORDER: Record<string, string> = {
+  ny:       '#003087',
+  open:     '#F59E0B',
+  waiting:  '#6366F1',
+  eskalert: '#EA580C',
+  closed:   '#D1D5DB',
+};
+
+function relativeDate(iso: string | null | undefined): string {
+  if (!iso) return '–';
+  const d = new Date(iso);
+  const diffDays = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+  if (diffDays === 0) return 'i dag';
+  if (diffDays === 1) return 'i går';
+  if (diffDays < 7)  return `${diffDays}d`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}u`;
+  return `${Math.floor(diffDays / 30)}m`;
+}
 
 export default function SaksbehandlingPage() {
   const router = useRouter();
@@ -392,13 +410,17 @@ export default function SaksbehandlingPage() {
                 </button>
               )}
             </div>
-            {/* Stats */}
+            {/* Stats — clickable quick filters */}
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
-              {[['Åpne', openCount], ['Nye', newCount], ['Lukket', closedCount]].map(([label, count]) => (
-                <div key={label as string} className="bg-white border border-gray-200 rounded-lg p-2 text-center">
-                  <div className="text-[1.2rem] font-bold text-[#003087] font-mono">{count}</div>
-                  <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">{label}</div>
-                </div>
+              {([['Åpne', openCount, 'open'], ['Nye', newCount, 'ny'], ['Lukket', closedCount, 'closed']] as const).map(([label, count, f]) => (
+                <button key={label} onClick={() => setFilter(filter === f ? 'alle' : f)}
+                  className={`rounded-lg p-2 text-center border transition-colors cursor-pointer
+                    ${filter === f
+                      ? 'bg-[#003087] border-[#003087] text-white'
+                      : 'bg-white border-gray-200 hover:border-[#003087]/40'}`}>
+                  <div className={`text-[1.2rem] font-bold font-mono ${filter === f ? 'text-white' : 'text-[#003087]'}`}>{count}</div>
+                  <div className={`text-[10px] font-semibold uppercase tracking-wide ${filter === f ? 'text-white/80' : 'text-gray-400'}`}>{label}</div>
+                </button>
               ))}
             </div>
             {/* Filter pills */}
@@ -414,35 +436,55 @@ export default function SaksbehandlingPage() {
           </div>
 
           {/* Case list */}
-          <div className="flex-1 overflow-y-auto p-1.5">
+          <div className="flex-1 overflow-y-auto py-1.5">
             {filteredCases.length === 0 ? (
               <div className="text-center py-10 text-gray-400 text-sm">Ingen saker her.</div>
             ) : (
               filteredCases.map(c => {
                 const isOverdue = c.sla_deadline && new Date(c.sla_deadline) < new Date() && c.status !== 'closed';
+                const isActive  = activeCase?.id === c.id;
+                const dupCount  = c.reg_nr ? (regNrMap.get(c.reg_nr.toUpperCase().replace(/\s/g, '')) ?? []).length : 0;
+                const showPrio  = c.priority === 'high' || c.priority === 'critical';
                 return (
                   <div key={c.id} onClick={() => openCase(c.id)}
-                    className={`px-3 py-2.5 rounded-lg border-[1.5px] mb-0.5 cursor-pointer transition-colors
-                      ${activeCase?.id === c.id
-                        ? 'bg-blue-50 border-[rgba(0,48,135,0.18)]'
-                        : 'border-transparent hover:bg-gray-50'}`}>
-                    <div className="flex justify-between items-start gap-1.5 mb-0.5">
-                      <span className="text-[13px] font-semibold text-gray-900 leading-snug">{c.customer_name}</span>
-                      <span className="text-[10px] font-mono text-gray-400 flex-shrink-0">{c.case_id}</span>
-                    </div>
-                    <div className="text-[11.5px] text-gray-500 mb-1.5">{c.category} · {(c.senter || '').replace('NAF ', '')}</div>
-                    <div className="flex items-center justify-between gap-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <StatusBadge status={c.status} />
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: PRIO_COLORS[c.priority || 'normal'] }} />
-                        {isOverdue && <span className="text-[10px] text-red-600 font-bold">SLA!</span>}
-                        {c.reg_nr && (regNrMap.get(c.reg_nr.toUpperCase().replace(/\s/g, '')) ?? []).length > 1 && (
-                          <span title="Flere reklamasjoner på samme reg.nr." className="text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 rounded px-1 leading-4">
-                            🚗×{(regNrMap.get(c.reg_nr.toUpperCase().replace(/\s/g, '')) ?? []).length}
+                    className={`flex items-stretch mx-1.5 mb-0.5 rounded-lg cursor-pointer transition-colors overflow-hidden
+                      ${isActive ? 'bg-blue-50 shadow-sm' : 'hover:bg-gray-50'}`}>
+                    {/* Status stripe */}
+                    <div className="w-[3px] flex-shrink-0 rounded-l-lg"
+                      style={{ background: STATUS_BORDER[c.status] ?? '#D1D5DB' }} />
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 px-2.5 py-2.5">
+                      {/* Row 1: name + relative date */}
+                      <div className="flex items-baseline justify-between gap-1.5 mb-0.5">
+                        <span className={`text-[13px] font-semibold leading-snug truncate ${isActive ? 'text-[#003087]' : 'text-gray-900'}`}>
+                          {c.customer_name}
+                        </span>
+                        <span className="text-[10.5px] text-gray-400 flex-shrink-0 tabular-nums">{relativeDate(c.created_at)}</span>
+                      </div>
+                      {/* Row 2: category · senter */}
+                      <div className="text-[11.5px] text-gray-400 mb-1.5 truncate">
+                        {c.category}
+                        {c.senter && <span className="text-gray-300"> · {c.senter.replace('NAF ', '')}</span>}
+                      </div>
+                      {/* Row 3: tags */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+                          style={{ background: `${STATUS_BORDER[c.status]}18`, color: STATUS_BORDER[c.status] }}>
+                          {STATUS_LABEL[c.status as CaseStatus] ?? c.status}
+                        </span>
+                        {isOverdue && (
+                          <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">SLA!</span>
+                        )}
+                        {showPrio && (
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: PRIO_COLORS[c.priority] }} />
+                        )}
+                        {dupCount > 1 && (
+                          <span title="Flere reklamasjoner på samme reg.nr."
+                            className="text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 rounded px-1.5 py-0.5">
+                            🚗×{dupCount}
                           </span>
                         )}
                       </div>
-                      <span className="text-[10.5px] font-mono text-gray-400">{formatDate(c.created_at)}</span>
                     </div>
                   </div>
                 );
@@ -528,28 +570,6 @@ export default function SaksbehandlingPage() {
                 </div>
               </div>
 
-              {/* Duplicate reg.nr. warning */}
-              {regNrSiblings.length > 0 && (
-                <div className="flex-shrink-0 bg-orange-50 border-b border-orange-200 px-5 py-2.5 flex items-start gap-2.5">
-                  <span className="text-orange-500 text-[15px] flex-shrink-0 mt-0.5">⚠️</span>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[12px] font-bold text-orange-800">
-                      {activeCase.reg_nr} er registrert i {regNrSiblings.length} annen{regNrSiblings.length > 1 ? 'e' : ''} sak{regNrSiblings.length > 1 ? 'er' : ''}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {regNrSiblings.map(s => (
-                        <button
-                          key={s.id}
-                          onClick={() => openCase(s.id)}
-                          className="text-[11px] font-mono text-orange-700 bg-white border border-orange-200 rounded px-2 py-0.5 hover:bg-orange-100 cursor-pointer transition-colors"
-                        >
-                          {s.case_id} · {s.customer_name} · {formatDate(s.created_at)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Body: timeline + right sidebar */}
               <div className="flex flex-1 overflow-hidden">
@@ -614,6 +634,21 @@ export default function SaksbehandlingPage() {
                         <div>
                           <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Kjøretøy</div>
                           <InfoRow label="Reg.nr"     value={<span className="font-bold tracking-widest font-mono text-[12px]">{activeCase.reg_nr || '–'}</span>} />
+                          {regNrSiblings.length > 0 && (
+                            <div className="mt-1.5 mb-1 bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-2">
+                              <div className="text-[11px] font-bold text-orange-700 mb-1.5">
+                                ⚠ {regNrSiblings.length} annen{regNrSiblings.length > 1 ? 'e' : ''} sak{regNrSiblings.length > 1 ? 'er' : ''} med {activeCase.reg_nr}
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                {regNrSiblings.map(s => (
+                                  <button key={s.id} onClick={() => openCase(s.id)}
+                                    className="text-left text-[11px] text-orange-700 hover:text-orange-900 hover:underline cursor-pointer bg-transparent border-none p-0">
+                                    {s.customer_name} · {relativeDate(s.created_at)}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           <InfoRow label="Senter"     value={activeCase.senter} />
                           <InfoRow label="Besøksdato" value={formatDate(activeCase.visit_date)} />
                           <InfoRow label="Ordrenr."   value={activeCase.order_number} />
