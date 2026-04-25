@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NAF Reklamasjonssystem — Project Status Report</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Serif+4:wght@400;600&display=swap');
+
+@page {
+  size: A4;
+  margin: 22mm 20mm 22mm 20mm;
+  @bottom-left {
+    content: "NAF Reklamasjonssystem · Status Report";
+    font-family: 'Inter', sans-serif;
+    font-size: 8pt;
+    color: #6b7280;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-family: 'Inter', sans-serif;
+    font-size: 8pt;
+    color: #6b7280;
+  }
+  @top-right {
+    content: "Confidential · For internal use";
+    font-family: 'Inter', sans-serif;
+    font-size: 8pt;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+}
+
+@page :first {
+  margin: 0;
+  @bottom-left { content: none; }
+  @bottom-right { content: none; }
+  @top-right { content: none; }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: #1f2937;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Cover page ─────────────────────────────────────────────── */
+.cover {
+  page: cover;
+  height: 297mm;
+  width: 210mm;
+  background: #003087;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40mm 25mm 30mm 25mm;
+  page-break-after: always;
+  position: relative;
+  overflow: hidden;
+}
+
+.cover::before {
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  width: 65mm;
+  height: 65mm;
+  background: #FFB81C;
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  opacity: 0.95;
+}
+
+.cover-eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #FFB81C;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.cover-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 36pt;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin: 12mm 0 0 0;
+  color: #ffffff;
+  max-width: 145mm;
+  position: relative;
+  z-index: 2;
+}
+
+.cover-subtitle {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 14pt;
+  font-style: italic;
+  line-height: 1.45;
+  font-weight: 400;
+  color: #c7d2fe;
+  margin: 8mm 0 0 0;
+  max-width: 140mm;
+  position: relative;
+  z-index: 2;
+}
+
+.cover-divider {
+  width: 30mm;
+  height: 3px;
+  background: #FFB81C;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.cover-meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.8;
+  color: #c7d2fe;
+  position: relative;
+  z-index: 2;
+}
+
+.cover-meta strong {
+  display: inline-block;
+  width: 32mm;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.cover-logo {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 18pt;
+  letter-spacing: 2px;
+  color: #ffffff;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Body sections ───────────────────────────────────────────── */
+section {
+  page-break-after: always;
+}
+
+section:last-child {
+  page-break-after: auto;
+}
+
+h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 22pt;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #003087;
+  margin: 0 0 4mm 0;
+  padding-bottom: 4mm;
+  border-bottom: 2px solid #003087;
+  line-height: 1.15;
+}
+
+h1 .section-num {
+  display: inline-block;
+  font-size: 11pt;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #FFB81C;
+  margin-bottom: 3mm;
+  display: block;
+}
+
+h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 13pt;
+  font-weight: 700;
+  color: #003087;
+  margin: 10mm 0 3mm 0;
+  letter-spacing: -0.2px;
+  page-break-after: avoid;
+}
+
+h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 11pt;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 6mm 0 2mm 0;
+  letter-spacing: -0.1px;
+  page-break-after: avoid;
+}
+
+p {
+  margin: 0 0 3mm 0;
+  text-align: justify;
+  hyphens: auto;
+}
+
+ul, ol {
+  margin: 0 0 4mm 0;
+  padding-left: 6mm;
+}
+
+li {
+  margin-bottom: 1.5mm;
+  line-height: 1.55;
+}
+
+li::marker { color: #003087; }
+
+/* ── Key takeaway boxes (McKinsey-style pyramid principle) ──── */
+.takeaway {
+  background: #f8fafc;
+  border-left: 3px solid #003087;
+  padding: 5mm 6mm 5mm 6mm;
+  margin: 4mm 0 7mm 0;
+  page-break-inside: avoid;
+}
+
+.takeaway-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #003087;
+  text-transform: uppercase;
+  margin: 0 0 2mm 0;
+}
+
+.takeaway-text {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 11.5pt;
+  line-height: 1.5;
+  color: #111827;
+  margin: 0;
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 3mm 0 5mm 0;
+  font-size: 9.5pt;
+  table-layout: fixed;
+  page-break-inside: avoid;
+}
+
+th {
+  text-align: left;
+  font-weight: 600;
+  background: #003087;
+  color: #ffffff;
+  padding: 2.8mm 3mm;
+  font-size: 9pt;
+  letter-spacing: 0.3px;
+  border: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+td {
+  padding: 2.8mm 3mm;
+  vertical-align: top;
+  border-bottom: 1px solid #e5e7eb;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.45;
+}
+
+tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+td.center, th.center { text-align: center; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── Sidebar / inset callouts ────────────────────────────────── */
+.callout {
+  border: 1px solid #e5e7eb;
+  border-radius: 1.5mm;
+  padding: 4mm 5mm;
+  margin: 4mm 0;
+  background: #fffaf0;
+  border-left: 3px solid #FFB81C;
+  page-break-inside: avoid;
+}
+
+.callout-title {
+  font-weight: 700;
+  font-size: 9.5pt;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 2mm 0;
+}
+
+.callout p:last-child { margin-bottom: 0; }
+
+/* ── Two-column layout ──────────────────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6mm;
+  margin: 3mm 0 4mm 0;
+}
+
+/* ── Status pills (used in tables) ──────────────────────────── */
+.pill {
+  display: inline-block;
+  padding: 0.5mm 2mm;
+  border-radius: 4mm;
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pill-green { background: #d1fae5; color: #065f46; }
+.pill-amber { background: #fef3c7; color: #92400e; }
+.pill-red   { background: #fee2e2; color: #991b1b; }
+.pill-blue  { background: #dbeafe; color: #1e40af; }
+.pill-gray  { background: #e5e7eb; color: #374151; }
+
+/* ── Table of contents ──────────────────────────────────────── */
+.toc {
+  margin: 4mm 0 0 0;
+}
+
+.toc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2.5mm 0;
+  border-bottom: 1px dotted #d1d5db;
+  font-size: 10.5pt;
+}
+
+.toc-row .num {
+  font-weight: 700;
+  color: #003087;
+  width: 12mm;
+  flex-shrink: 0;
+}
+
+.toc-row .title {
+  flex: 1;
+  color: #1f2937;
+}
+
+.toc-row .page {
+  font-variant-numeric: tabular-nums;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ── Definition lists for vendor / spec entries ─────────────── */
+.spec-grid {
+  display: grid;
+  grid-template-columns: 50mm 1fr;
+  gap: 2mm 6mm;
+  margin: 2mm 0 5mm 0;
+  font-size: 10pt;
+}
+.spec-grid dt {
+  font-weight: 600;
+  color: #003087;
+}
+.spec-grid dd {
+  margin: 0;
+  color: #1f2937;
+}
+
+/* ── Footnote / muted text ───────────────────────────────────── */
+.muted { color: #6b7280; font-size: 9pt; }
+.small { font-size: 9pt; }
+
+/* ── Final page ─────────────────────────────────────────────── */
+.endmark {
+  text-align: center;
+  margin-top: 18mm;
+  font-family: 'Inter', sans-serif;
+  font-size: 9pt;
+  letter-spacing: 4px;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+/* Avoid orphaned headers */
+h1, h2, h3 { page-break-after: avoid; }
+table, .takeaway, .callout { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════ COVER PAGE ════════════════════════ -->
+<div class="cover">
+  <div>
+    <div class="cover-logo">NAF</div>
+  </div>
+
+  <div>
+    <p class="cover-eyebrow">Project Status Report</p>
+    <h1 class="cover-title">NAF Reklamasjons&shy;system</h1>
+    <p class="cover-subtitle">A consolidated view of delivered capabilities, security posture, identified risks, and the opportunity roadmap ahead.</p>
+  </div>
+
+  <div>
+    <div class="cover-divider"></div>
+    <p class="cover-meta" style="margin-top:8mm">
+      <strong>Prepared by</strong> Tom Aylward<br>
+      <strong>Date</strong> 25 April 2026<br>
+      <strong>Audience</strong> Project lead (personal reference)<br>
+      <strong>Classification</strong> Confidential — Internal NAF use
+    </p>
+  </div>
+</div>
+
+<!-- ════════════════════════ TABLE OF CONTENTS ════════════════════════ -->
+<section>
+  <h1><span class="section-num">CONTENTS</span>Table of Contents</h1>
+  <div class="toc">
+    <div class="toc-row"><span class="num">01</span><span class="title">Executive Summary</span><span class="page">3</span></div>
+    <div class="toc-row"><span class="num">02</span><span class="title">Project Overview</span><span class="page">4</span></div>
+    <div class="toc-row"><span class="num">03</span><span class="title">Architecture &amp; Technology</span><span class="page">5</span></div>
+    <div class="toc-row"><span class="num">04</span><span class="title">Delivered Capabilities</span><span class="page">6</span></div>
+    <div class="toc-row"><span class="num">05</span><span class="title">Security Posture</span><span class="page">8</span></div>
+    <div class="toc-row"><span class="num">06</span><span class="title">Risk Register</span><span class="page">10</span></div>
+    <div class="toc-row"><span class="num">07</span><span class="title">Opportunity Roadmap</span><span class="page">12</span></div>
+    <div class="toc-row"><span class="num">08</span><span class="title">Parked Initiatives</span><span class="page">14</span></div>
+    <div class="toc-row"><span class="num">09</span><span class="title">Open Decisions</span><span class="page">16</span></div>
+    <div class="toc-row"><span class="num">10</span><span class="title">Vendors &amp; Costs</span><span class="page">17</span></div>
+    <div class="toc-row"><span class="num">11</span><span class="title">Operating Model</span><span class="page">18</span></div>
+  </div>
+</section>
+
+<!-- ════════════════════════ 01 EXECUTIVE SUMMARY ════════════════════════ -->
+<section>
+  <h1><span class="section-num">01 · EXECUTIVE SUMMARY</span>Where the project stands today</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Headline</p>
+    <p class="takeaway-text">NAF Reklamasjonssystem is in production with five core capabilities live, a security posture aligned to NAF.no enterprise standards, and a clear runway of low-risk improvements ahead. The system is ready for IT security review pending two final compliance work-streams.</p>
+  </div>
+
+  <h2>What has been built</h2>
+  <p>A web-based complaint-handling tool that lets NAF customers submit complaints, exchange messages with a saksbehandler, and attach files — without creating an account. Internally, saksbehandlere work cases scoped to their own centre, senterledere oversee their region, and administrators manage users and exports. Five distinct features have been shipped to production, each with implementation plans, code reviews, and security checks documented.</p>
+
+  <h2>Security position</h2>
+  <p>A full-spectrum security hardening sprint has just been completed. All eight modern security headers are in place and verified live. Distributed rate limiting is operational on three public endpoints. A dependency vulnerability was identified and resolved by replacing the affected library. A formal <em>SECURITY.md</em> document and a <em>security.txt</em> responsible-disclosure file are published. The platform meets or exceeds NAF.no's own externally measurable security standards.</p>
+
+  <h2>What's next</h2>
+  <p>Two work-streams complete the IT security readiness arc — an access-control audit and a GDPR / data-handling documentation pass. Together these are estimated at one working week. Beyond compliance, a lightweight keyword search over resolved cases offers high near-term value to saksbehandlere at minimal cost. A more ambitious semantic-search capability has been deliberately parked until the resolved-case corpus reaches the depth required to make it useful.</p>
+
+  <h2>Top three risks under management</h2>
+  <ol>
+    <li><strong>Free-tier infrastructure dependency.</strong> Supabase pauses inactive projects after seven days on the free plan; storage is also capped at 1&nbsp;GB. Mitigation: upgrade to Pro before active production use scales.</li>
+    <li><strong>Direct-to-production deployment habit.</strong> Current workflow pushes straight to <em>main</em>. Mitigation: adopt branch + preview-URL + pull-request discipline starting with the next change.</li>
+    <li><strong>Single-developer continuity (bus-factor of one).</strong> Mitigation: comprehensive documentation — including this report — reduces but does not eliminate this exposure.</li>
+  </ol>
+</section>
+
+<!-- ════════════════════════ 02 PROJECT OVERVIEW ════════════════════════ -->
+<section>
+  <h1><span class="section-num">02 · PROJECT OVERVIEW</span>What the system does and who it serves</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">In one sentence</p>
+    <p class="takeaway-text">A purpose-built complaint-handling platform that gives NAF customers a frictionless way to submit and reply to complaints, while giving saksbehandlere a structured, role-scoped workspace to manage them.</p>
+  </div>
+
+  <h2>Users and their workflows</h2>
+  <table>
+    <colgroup><col style="width:30mm"><col style="width:auto"></colgroup>
+    <thead><tr><th>Role</th><th>Primary tasks</th></tr></thead>
+    <tbody>
+      <tr><td>Customer</td><td>Submits a new complaint via the public form, then replies to follow-up questions through a tokenised email link — no login required.</td></tr>
+      <tr><td>Saksbehandler</td><td>Works the case queue scoped to their own centre. Sends replies, uploads attachments, applies templates, escalates when needed.</td></tr>
+      <tr><td>Senterleder</td><td>Sees all cases within their centre. Read-oriented oversight role.</td></tr>
+      <tr><td>Administrator</td><td>Approves new saksbehandler registrations, has full case visibility, generates Excel exports.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Production environment</h2>
+  <div class="spec-grid">
+    <dt>Live URL</dt><dd>naf-reklamasjon-next.vercel.app</dd>
+    <dt>Hosting domain</dt><dd>Vercel (NAF subdomain not currently available)</dd>
+    <dt>Data residency</dt><dd>European Union (Stockholm region for primary data store)</dd>
+    <dt>Status</dt><dd>Production, low-volume operational use</dd>
+  </div>
+
+  <h2>Why this report exists</h2>
+  <p>This document is the canonical reference for the project's current state. It is intended for the project lead to maintain situational awareness over time, to brief any future contributors, and — with light editing — to support an IT security review conversation when the moment arrives. The Markdown source lives in the repository at <code>docs/PROSJEKTOVERSIKT.md</code> and similar; this PDF is a moment-in-time snapshot.</p>
+</section>
+
+<!-- ════════════════════════ 03 ARCHITECTURE ════════════════════════ -->
+<section>
+  <h1><span class="section-num">03 · ARCHITECTURE &amp; TECHNOLOGY</span>How the system is built</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Architectural posture</p>
+    <p class="takeaway-text">A modern, server-first Next.js application backed by Supabase, with security enforced at the database layer rather than only in application code. Stack choices favour managed services with EU data residency to minimise both operational burden and compliance surface area.</p>
+  </div>
+
+  <h2>Technology stack</h2>
+  <table>
+    <colgroup><col style="width:42mm"><col style="width:auto"></colgroup>
+    <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+    <tbody>
+      <tr><td>Frontend &amp; backend</td><td>Next.js 16 (App Router) in TypeScript; React Server Components</td></tr>
+      <tr><td>Database</td><td>Supabase PostgreSQL (Stockholm) with Row Level Security</td></tr>
+      <tr><td>Authentication</td><td>Supabase Auth — JWT in httpOnly cookies, no client-side token storage</td></tr>
+      <tr><td>File storage</td><td>Supabase Storage with signed URLs (60-minute expiry)</td></tr>
+      <tr><td>Transactional email</td><td>SendGrid</td></tr>
+      <tr><td>Rate limiting</td><td>Upstash Redis (sliding-window algorithm, EU region)</td></tr>
+      <tr><td>Hosting</td><td>Vercel — auto-deploy from <em>main</em> branch</td></tr>
+      <tr><td>Excel export</td><td>ExcelJS (replaced the vulnerable <em>xlsx</em> library)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Architectural principles</h2>
+  <ol>
+    <li><strong>Database-enforced authorisation.</strong> Row Level Security policies in Supabase ensure saksbehandlere can only read cases tied to their own centre — even if application code contained a bug. Authorisation is not a single point of failure.</li>
+    <li><strong>Service-role isolation.</strong> The Supabase service-role key is used exclusively in server contexts and is never bundled to the browser. Public client code uses the anonymous key.</li>
+    <li><strong>Server-first rendering.</strong> Wherever possible, logic runs on the server through React Server Components. This shrinks the JavaScript shipped to clients and reduces the surface area for client-side attacks.</li>
+    <li><strong>Tokenised public access.</strong> The customer reply portal uses 122-bit UUID tokens validated server-side with timing-safe comparison. No customer authentication is required, but enumeration attacks are not feasible.</li>
+  </ol>
+</section>
+
+<!-- ════════════════════════ 04 DELIVERED CAPABILITIES ════════════════════════ -->
+<section>
+  <h1><span class="section-num">04 · DELIVERED CAPABILITIES</span>Five features in production</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Capability summary</p>
+    <p class="takeaway-text">Five distinct capabilities have been shipped, each spec-driven and code-reviewed. Together they form a complete, end-to-end complaint-handling workflow with the safeguards expected of a system handling personal data.</p>
+  </div>
+
+  <h2>Capability 1 — Roles, RLS &amp; escalation</h2>
+  <p>The foundation. A three-tier role model — administrator, saksbehandler, senterleder — enforced at the database through Row Level Security. Saksbehandlere see only cases tied to their centre; this is unbypassable from the application layer. Includes search, pagination, escalation notifications, reply templates, and basic reporting.</p>
+
+  <h2>Capability 2 — User registration &amp; admin</h2>
+  <p>Self-service registration for new saksbehandlere with an explicit approval gate. New users register and wait; an administrator approves or rejects via the admin console. Email notifications are dispatched at each state change. The administrator interface lives at <code>/admin</code>.</p>
+
+  <h2>Capability 3 — File attachments</h2>
+  <p>Customers and saksbehandlere can attach JPG, PNG, and PDF files — bounded at 10&nbsp;MB per file and five files per upload. Files are persisted in Supabase Storage and accessed exclusively through signed 60-minute URLs. The <code>attachments</code> table is itself protected by Row Level Security policies, so attachment access mirrors case access.</p>
+
+  <h2>Capability 4 — Customer reply portal</h2>
+  <p>Outbound emails carry a "Svar på reklamasjonen" button that links to a public portal at <code>/svar/[case_id]?token=UUID</code>. Customers can write a reply and attach a file without logging in. Replies surface in the case timeline in real time and trigger an email notification to the assigned saksbehandler. The token is validated server-side with timing-safe comparison; the same response is returned for missing cases and wrong tokens to prevent enumeration.</p>
+
+  <h2>Capability 5 — Security hardening</h2>
+  <p>A dedicated sprint that brought the platform up to NAF.no security standards. Components shipped:</p>
+  <ul>
+    <li><strong>Security headers</strong> — CSP, HSTS (two years with preload), X-Frame-Options, X-Content-Type-Options, Referrer-Policy, COOP, CORP, Permissions-Policy. All eight verified live in production.</li>
+    <li><strong>Distributed rate limiting</strong> — Upstash Redis with sliding window. Customer reply: 5 requests per 10 minutes. File upload: 10 per 10 minutes. New complaint submission: 3 per hour. Verified end-to-end in production.</li>
+    <li><strong>Dependency audit</strong> — the vulnerable <em>xlsx</em> library was replaced with <em>exceljs</em>, resolving a HIGH-severity CVE. Two MODERATE CVEs remain in transitive dependencies, both documented and accepted.</li>
+    <li><strong>Responsible disclosure</strong> — <code>security.txt</code> published at <code>/.well-known/security.txt</code>.</li>
+    <li><strong>Audit-ready documentation</strong> — an eight-section <em>SECURITY.md</em> covering data inventory, vendors, authorisation, controls, limitations, and the dependency audit, written for a professional reviewer.</li>
+  </ul>
+</section>
+
+<!-- ════════════════════════ 05 SECURITY POSTURE ════════════════════════ -->
+<section>
+  <h1><span class="section-num">05 · SECURITY POSTURE</span>Controls in place</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Posture summary</p>
+    <p class="takeaway-text">The platform is hardened across nine layers of defence — from transport security to dependency hygiene — and is positioned to achieve a Grade A rating on industry-standard external scanners. Two acknowledged limitations are documented as future enhancements rather than gaps.</p>
+  </div>
+
+  <h2>Defence in depth</h2>
+  <table>
+    <colgroup><col style="width:38mm"><col style="width:auto"></colgroup>
+    <thead><tr><th>Layer</th><th>Control</th></tr></thead>
+    <tbody>
+      <tr><td>Transport</td><td>HTTPS only; HSTS for two years with subdomain inclusion and preload eligibility; automatic upgrade of insecure requests.</td></tr>
+      <tr><td>Browser headers</td><td>Full Content Security Policy without wildcards; X-Frame-Options DENY; COOP same-origin; CORP same-site; Permissions-Policy disabling camera, microphone, geolocation, payment, USB, and display capture.</td></tr>
+      <tr><td>Authentication</td><td>Supabase JWT in httpOnly cookies. No tokens stored in browser local storage.</td></tr>
+      <tr><td>Authorisation</td><td>Row Level Security on all tables; centre scoping enforced for saksbehandlere at the database layer.</td></tr>
+      <tr><td>Rate limiting</td><td>Upstash Redis distributed counters with sliding window. Fail-open posture preserves availability if Upstash itself fails.</td></tr>
+      <tr><td>Input validation</td><td>Length limits, file-type and file-size enforcement, HTML escaping in all email templates.</td></tr>
+      <tr><td>File storage</td><td>Signed URLs with 60-minute expiry; Row Level Security on the <em>attachments</em> table.</td></tr>
+      <tr><td>Public access</td><td>UUID tokens with 122-bit entropy; timing-safe comparison; same response for invalid token and missing case.</td></tr>
+      <tr><td>Dependencies</td><td>Clean of HIGH and CRITICAL vulnerabilities; remaining MODERATE findings documented and accepted.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>External scanner expectation</h2>
+  <p>The platform is expected to score Grade A on securityheaders.com. Achieving Grade A+ requires moving from the current <code>'unsafe-inline'</code> CSP to a nonce-based policy — a known enhancement, scoped but not yet implemented.</p>
+
+  <h2>Acknowledged limitations</h2>
+  <ul>
+    <li><strong>NAF subdomain not yet available.</strong> The system runs on <em>vercel.app</em>. This is a brand and trust limitation rather than a technical security weakness; revisit if NAF IT can later assign a subdomain.</li>
+    <li><strong>No web application firewall.</strong> The platform relies on Vercel's platform-level protection. A dedicated WAF can be added if traffic volume or threat profile justifies the operational cost.</li>
+    <li><strong>CSP uses <code>'unsafe-inline'</code> for scripts.</strong> Required for Next.js client-side hydration without nonce injection. Path to a stricter nonce-based policy is documented in <em>SECURITY.md</em>.</li>
+  </ul>
+</section>
+
+<!-- ════════════════════════ 06 RISK REGISTER ════════════════════════ -->
+<section>
+  <h1><span class="section-num">06 · RISK REGISTER</span>What could go wrong, and how it is being managed</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Risk posture</p>
+    <p class="takeaway-text">Twelve risks tracked. The two most material are operational rather than security-related: free-tier infrastructure pause-out and the absence of staging-grade database isolation. Both have known, low-cost mitigations triggered by an active-use threshold.</p>
+  </div>
+
+  <h2>Tracked risks</h2>
+  <table>
+    <colgroup><col style="width:50mm"><col style="width:18mm"><col style="width:18mm"><col style="width:auto"></colgroup>
+    <thead>
+      <tr><th>Risk</th><th class="center">Likelihood</th><th class="center">Impact</th><th>Mitigation</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Supabase free-tier project pauses after 7 days idle</td><td class="center"><span class="pill pill-amber">High</span></td><td class="center"><span class="pill pill-red">High</span></td><td>Upgrade to Supabase Pro before active production use scales.</td></tr>
+      <tr><td>Free-tier 1&nbsp;GB storage limit reached</td><td class="center"><span class="pill pill-amber">Medium</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>Upgrade to Pro; introduce attachment retention policy.</td></tr>
+      <tr><td>Database migration locks production table</td><td class="center"><span class="pill pill-amber">Medium</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>Use <em>CREATE INDEX CONCURRENTLY</em>; run off-hours; manual backup before migration.</td></tr>
+      <tr><td>Direct-to-main deployment ships a defect to live customers</td><td class="center"><span class="pill pill-amber">Medium</span></td><td class="center"><span class="pill pill-red">High</span></td><td>Adopt feature-branch + preview-URL + pull-request workflow effective immediately.</td></tr>
+      <tr><td>Vercel.app domain perceived as non-official</td><td class="center"><span class="pill pill-amber">Medium</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>Re-engage NAF IT for subdomain assignment when feasible; emphasise official sender in customer emails.</td></tr>
+      <tr><td>SendGrid bounce rate climbs</td><td class="center"><span class="pill pill-blue">Low</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>Monitor sender reputation; verify SPF and DKIM if rates spike.</td></tr>
+      <tr><td><em>'unsafe-inline'</em> CSP exploited if another vulnerability exists</td><td class="center"><span class="pill pill-blue">Low</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>Move to nonce-based CSP when a hardening sprint allows.</td></tr>
+      <tr><td>Newly disclosed CRITICAL CVE in a dependency</td><td class="center"><span class="pill pill-amber">Medium</span></td><td class="center"><span class="pill pill-red">High</span></td><td>Monthly <em>npm audit</em>; subscribe to GitHub Dependabot alerts.</td></tr>
+      <tr><td>Malicious file uploaded as attachment</td><td class="center"><span class="pill pill-blue">Low</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>File-type and size validation in place; consider antivirus scanning if volume warrants.</td></tr>
+      <tr><td>Single-developer continuity (bus-factor of one)</td><td class="center"><span class="pill pill-amber">High</span></td><td class="center"><span class="pill pill-red">High</span></td><td>Comprehensive documentation including this report; onboarding-ready repository.</td></tr>
+      <tr><td>Customer submits more PII than required</td><td class="center"><span class="pill pill-amber">High</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>Privacy notice; short retention policy; data minimisation in any future analytics.</td></tr>
+      <tr><td>Third-party vendor incident affects availability</td><td class="center"><span class="pill pill-blue">Low</span></td><td class="center"><span class="pill pill-amber">Medium</span></td><td>Status-page monitoring; documented vendor list in SECURITY.md.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════ 07 OPPORTUNITY ROADMAP ════════════════════════ -->
+<section>
+  <h1><span class="section-num">07 · OPPORTUNITY ROADMAP</span>What to build, in what order</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Sequencing logic</p>
+    <p class="takeaway-text">The next quarter prioritises closing the security review loop and removing free-tier risk. Net-new user-facing capabilities follow only once the foundations are settled. A more ambitious AI-driven feature is held until the underlying data corpus is deep enough to make it useful.</p>
+  </div>
+
+  <h2>Near term — close the security loop</h2>
+  <table>
+    <colgroup><col style="width:8mm"><col style="width:50mm"><col style="width:18mm"><col style="width:auto"></colgroup>
+    <thead><tr><th>#</th><th>Initiative</th><th>Effort</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Access-control audit</td><td>~2 days</td><td>Verify RLS policies are end-to-end enforced; add admin audit log. Locks in what is already built before adding more.</td></tr>
+      <tr><td>2</td><td>GDPR &amp; data-handling documentation</td><td>~2–3 days</td><td>Data residency confirmation, retention policy, vendor DPAs, customer privacy notice. Required for IT security review.</td></tr>
+      <tr><td>3</td><td>Lightweight keyword search over resolved cases</td><td>~1–2 days</td><td>Useful immediately; builds the corpus and the workflow muscle memory needed for a future semantic-search feature.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>When active use begins</h2>
+  <table>
+    <colgroup><col style="width:8mm"><col style="width:50mm"><col style="width:18mm"><col style="width:auto"></colgroup>
+    <thead><tr><th>#</th><th>Initiative</th><th>Effort</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>4</td><td>Supabase Pro upgrade</td><td>~1 hour</td><td>Removes pause-out risk; enables Branching for safer migrations; raises storage limit.</td></tr>
+      <tr><td>5</td><td>Branch + preview + PR workflow</td><td>Process</td><td>Zero-cost workflow change that prevents the majority of ship-and-regret moments.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Longer horizon</h2>
+  <table>
+    <colgroup><col style="width:8mm"><col style="width:50mm"><col style="width:18mm"><col style="width:auto"></colgroup>
+    <thead><tr><th>#</th><th>Initiative</th><th>Effort</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>6</td><td>Semantic search on resolved cases</td><td>~3–4 days</td><td>Surfaces precedent for consistency; held until corpus reaches ~200 resolved cases.</td></tr>
+      <tr><td>7</td><td>Nonce-based CSP</td><td>~1 day</td><td>Lifts external scanner score from A to A+; closes the last documented header limitation.</td></tr>
+      <tr><td>8</td><td>NAF subdomain</td><td>NAF IT-led</td><td>Strengthens customer trust signals; depends on internal assignment process.</td></tr>
+      <tr><td>9</td><td>Web application firewall</td><td>Vendor-led</td><td>Adds attack-surface protection beyond Vercel's platform layer; warranted at higher traffic.</td></tr>
+      <tr><td>10</td><td>Explicit "similar case" signal at resolution</td><td>~½ day</td><td>Hard data on case repeatability over three months; informs whether semantic search is worth building.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Aspirational</h2>
+  <ol>
+    <li><strong>AI-drafted reply suggestions</strong> — built on top of semantic search plus an LLM; suggests a draft the saksbehandler edits.</li>
+    <li><strong>Customer status page</strong> — lets customers check case status without waiting for email.</li>
+    <li><strong>Senterleder dashboard</strong> — case volume, average response time, escalation trends.</li>
+    <li><strong>NAF membership lookup</strong> — surface member context directly in the case view.</li>
+  </ol>
+</section>
+
+<!-- ════════════════════════ 08 PARKED INITIATIVES ════════════════════════ -->
+<section>
+  <h1><span class="section-num">08 · PARKED INITIATIVES</span>Ideas considered and explicitly deferred</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Discipline</p>
+    <p class="takeaway-text">Two well-developed ideas have been deliberately parked rather than built. Each has a written rationale, a documented trigger condition for re-opening, and a preserved design — protecting the option without paying its cost today.</p>
+  </div>
+
+  <h2>Parked: Semantic search on resolved cases</h2>
+  <p><strong>What it would do.</strong> When a saksbehandler opens a complaint, surface three past resolved cases that are semantically similar — based on the meaning of the text, not just keyword overlap. Each match would display the original complaint, NAF's reply, and a one-click "Copy reply" button.</p>
+  <p><strong>Why parked.</strong> Vector similarity needs corpus depth (around 200 resolved cases) to feel useful. Existing reply templates already cover much of the consistency need. Adding OpenAI as a fourth third-party vendor introduces new compliance overhead. There is also a behavioural risk that one-click reply copying degrades answer quality if applied uncritically.</p>
+  <p><strong>Trigger to revisit.</strong> Any one of: corpus exceeds ~200 resolved cases; saksbehandlere repeatedly report inability to find prior similar cases; consistency audits show recurring divergence; reply templates begin to feel insufficient at scale.</p>
+  <p><strong>Design preserved.</strong> Inline placement between complaint and reply; automatic on case open; expandable cards with reply preview; OpenAI <em>text-embedding-3-small</em> model with EU residency. Full design in <code>docs/future-work/2026-04-25-similar-cases-vector-search.md</code>.</p>
+
+  <h2>Parked: Permanent staging environment</h2>
+  <p><strong>What it would do.</strong> Provide true production-mirrored isolation for testing — separate Supabase project, separate vendor accounts, code promoted through a staging branch before production.</p>
+  <p><strong>Why parked.</strong> The current scale of the project does not justify the operational overhead. Vercel preview URLs already provide code-level isolation, and Supabase Branching offers database-level isolation as a low-effort upgrade when needed. Building a permanent staging environment now would solve a problem we don't yet have.</p>
+  <p><strong>Trigger to revisit.</strong> First material database change, multiple developers joining the project, or an explicit IT-security requirement for a staging mirror.</p>
+  <p><strong>Path forward.</strong> Adopt branch-and-preview discipline now (no infrastructure cost). Upgrade to Supabase Pro and enable Branching when active use begins (<code>~$25/month</code>). Build a permanent staging environment only if scale demands it.</p>
+</section>
+
+<!-- ════════════════════════ 09 OPEN DECISIONS ════════════════════════ -->
+<section>
+  <h1><span class="section-num">09 · OPEN DECISIONS</span>What needs an answer, and from whom</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Decision posture</p>
+    <p class="takeaway-text">Eight unresolved decisions, none blocking current operations. Three are tied to the upcoming compliance work-streams and will be settled as part of that work. The remainder are strategic choices that mature with experience.</p>
+  </div>
+
+  <table>
+    <colgroup><col style="width:auto"><col style="width:30mm"><col style="width:30mm"></colgroup>
+    <thead><tr><th>Question</th><th>Owner</th><th>Trigger</th></tr></thead>
+    <tbody>
+      <tr><td>Should the system get a NAF subdomain?</td><td>NAF IT</td><td>When IT capacity allows</td></tr>
+      <tr><td>Upgrade Supabase to Pro now or later?</td><td>Project lead</td><td>First material DB change or active-use ramp</td></tr>
+      <tr><td>Case retention period — how long should resolved cases be kept?</td><td>Privacy / Legal</td><td>GDPR work-stream</td></tr>
+      <tr><td>Who signs DPAs with Supabase, Vercel, SendGrid, Upstash?</td><td>Legal</td><td>GDPR work-stream</td></tr>
+      <tr><td>Adopt a permanent staging environment?</td><td>Project lead</td><td>Multiple developers or IT-security requirement</td></tr>
+      <tr><td>Send complaint confirmation by SMS in addition to email?</td><td>Product</td><td>Customer feedback</td></tr>
+      <tr><td>When to schedule the formal IT security review?</td><td>Project lead</td><td>After GDPR work-stream completes</td></tr>
+      <tr><td>Should customers be able to download a case summary as PDF?</td><td>Product</td><td>Volume / customer request</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════ 10 VENDORS & COSTS ════════════════════════ -->
+<section>
+  <h1><span class="section-num">10 · VENDORS &amp; COSTS</span>What we depend on and what it costs</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">Cost posture</p>
+    <p class="takeaway-text">The platform currently runs on free-tier infrastructure — total marginal monthly cost zero. Anticipated steady-state cost at active production use is approximately fifty to seventy US dollars per month, scaling linearly with volume.</p>
+  </div>
+
+  <h2>Vendors in use today</h2>
+  <table>
+    <colgroup><col style="width:30mm"><col style="width:auto"><col style="width:35mm"></colgroup>
+    <thead><tr><th>Vendor</th><th>Role</th><th>Plan</th></tr></thead>
+    <tbody>
+      <tr><td>Vercel</td><td>Application hosting; serverless functions; preview deployments per branch</td><td>Hobby (free)</td></tr>
+      <tr><td>Supabase</td><td>PostgreSQL database; authentication; file storage</td><td>Free</td></tr>
+      <tr><td>SendGrid</td><td>Transactional email delivery</td><td>Free (100 / day)</td></tr>
+      <tr><td>Upstash</td><td>Redis for distributed rate limiting (EU region)</td><td>Free (10k requests / day)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Anticipated upgrade costs</h2>
+  <table>
+    <colgroup><col style="width:auto"><col style="width:42mm"><col style="width:30mm"></colgroup>
+    <thead><tr><th>Trigger</th><th>Action</th><th>Recurring cost</th></tr></thead>
+    <tbody>
+      <tr><td>Active production use begins</td><td>Supabase Pro upgrade — removes pause risk, raises storage, enables Branching</td><td class="num">USD 25 / month</td></tr>
+      <tr><td>Volume exceeds 100 emails / day</td><td>SendGrid Essentials</td><td class="num">From USD 20 / month</td></tr>
+      <tr><td>Team expands or traffic grows</td><td>Vercel Pro (per seat)</td><td class="num">USD 20 / month</td></tr>
+      <tr><td>Semantic-search feature is opened</td><td>OpenAI embeddings — one-time backfill plus marginal use</td><td class="num">~USD 1 / month</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Total cost outlook</h2>
+  <div class="spec-grid">
+    <dt>Today (free tier)</dt><dd>USD 0 / month</dd>
+    <dt>Active steady-state (estimated)</dt><dd>USD 50–70 / month</dd>
+    <dt>Cost-to-revenue framing</dt><dd>Negligible relative to the saksbehandler operational time the platform replaces.</dd>
+  </div>
+</section>
+
+<!-- ════════════════════════ 11 OPERATING MODEL ════════════════════════ -->
+<section>
+  <h1><span class="section-num">11 · OPERATING MODEL</span>How the project is run</h1>
+
+  <div class="takeaway">
+    <p class="takeaway-label">How work happens</p>
+    <p class="takeaway-text">A spec-driven, subagent-assisted development workflow that produces structured documentation as a byproduct of building. Every feature has a design specification, an implementation plan, and a code-review record, which is what makes a report like this one possible at all.</p>
+  </div>
+
+  <h2>Development workflow</h2>
+  <ol>
+    <li><strong>Brainstorm</strong> — design specification written to <code>docs/superpowers/specs/</code></li>
+    <li><strong>Plan</strong> — implementation plan written to <code>docs/superpowers/plans/</code></li>
+    <li><strong>Implement</strong> — subagent-driven development with spec compliance and code-quality reviews per task</li>
+    <li><strong>Deploy</strong> — feature branch → preview URL → pull request → merge to <em>main</em> → production (workflow recently formalised)</li>
+  </ol>
+
+  <h2>Documentation hierarchy</h2>
+  <table>
+    <colgroup><col style="width:50mm"><col style="width:auto"></colgroup>
+    <thead><tr><th>Document</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><em>SECURITY.md</em></td><td>Security posture, controls, vendor list, dependency audit. Audience: IT security reviewer.</td></tr>
+      <tr><td><em>docs/README.md</em></td><td>Index of features built and links to specs, plans, future work.</td></tr>
+      <tr><td><em>docs/superpowers/specs/</em></td><td>Per-feature design specifications.</td></tr>
+      <tr><td><em>docs/superpowers/plans/</em></td><td>Per-feature step-by-step implementation plans.</td></tr>
+      <tr><td><em>docs/future-work/</em></td><td>Parked initiatives, with rationale and trigger conditions for re-opening.</td></tr>
+      <tr><td><em>docs/PROSJEKTOVERSIKT.md</em></td><td>Norwegian living overview; companion to this English report.</td></tr>
+      <tr><td>This report</td><td>Snapshot view of the project for the project lead's reference.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Maintenance of this report</h2>
+  <p>This document is regenerated from a structured source on demand. Updates are warranted when a new feature reaches production, when a tracked risk materially changes, when an open decision is resolved, or when a new vendor or cost item enters the picture.</p>
+
+  <p class="endmark">— END OF REPORT —</p>
+</section>
+
+</body>
+</html>

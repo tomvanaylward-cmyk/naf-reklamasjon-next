@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<title>Business case — NAF Reklamasjonssystem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 20mm 22mm 20mm;
+    @top-left {
+      content: "Konfidensielt · Internt bruk";
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    @bottom-right {
+      content: "Side " counter(page) " av " counter(pages);
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+    @bottom-left {
+      content: "NAF Reklamasjonssystem · Business case";
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+  }
+
+  @page :first {
+    margin: 0;
+    @top-left { content: none; }
+    @bottom-right { content: none; }
+    @bottom-left { content: none; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* COVER PAGE ----------------------------------------------------------- */
+  .cover {
+    page-break-after: always;
+    page-break-inside: avoid;
+    height: 297mm;
+    width: 210mm;
+    background: #003087;
+    color: #ffffff;
+    position: relative;
+    padding: 28mm 22mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 90mm;
+    height: 90mm;
+    background: #FFB81C;
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+  }
+  .cover-top { position: relative; z-index: 1; }
+  .cover-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #FFB81C;
+    margin-bottom: 4mm;
+  }
+  .cover-mark {
+    font-family: 'Inter', sans-serif;
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: #ffffff;
+  }
+  .cover-mid {
+    position: relative;
+    z-index: 1;
+    margin-top: 14mm;
+  }
+  .cover h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 38pt;
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    margin-bottom: 8mm;
+    max-width: 150mm;
+  }
+  .cover-subtitle {
+    font-family: 'Source Serif 4', serif;
+    font-size: 14pt;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.92);
+    max-width: 130mm;
+  }
+  .cover-bottom {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    padding-top: 6mm;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8mm;
+  }
+  .cover-meta-label {
+    font-size: 7.5pt;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,184,28,0.95);
+    margin-bottom: 2mm;
+  }
+  .cover-meta-value {
+    font-size: 10pt;
+    font-weight: 500;
+    color: #ffffff;
+  }
+
+  /* CONTENT -------------------------------------------------------------- */
+  .page-block {
+    padding-top: 4mm;
+  }
+  section {
+    page-break-inside: avoid;
+    margin-bottom: 9mm;
+  }
+  section.allow-break {
+    page-break-inside: auto;
+  }
+
+  .section-num {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #003087;
+    margin-bottom: 2.5mm;
+  }
+
+  h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 19pt;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #0f172a;
+    margin-bottom: 4.5mm;
+    padding-bottom: 3mm;
+    border-bottom: 2px solid #003087;
+  }
+
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 12pt;
+    font-weight: 600;
+    color: #0f172a;
+    margin-top: 5mm;
+    margin-bottom: 2.5mm;
+    letter-spacing: -0.005em;
+  }
+
+  p {
+    margin-bottom: 3mm;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    orphans: 3;
+    widows: 3;
+  }
+
+  ol, ul {
+    margin: 3mm 0 4mm 0;
+    padding-left: 5mm;
+  }
+  ol li, ul li {
+    margin-bottom: 2mm;
+    text-align: justify;
+    hyphens: auto;
+  }
+  ol li::marker {
+    color: #003087;
+    font-weight: 700;
+  }
+  ul li::marker {
+    color: #003087;
+  }
+
+  strong { font-weight: 600; color: #0f172a; }
+  em { font-style: italic; }
+
+  /* TAKEAWAY ------------------------------------------------------------- */
+  .takeaway {
+    background: #f8fafc;
+    border-left: 3px solid #003087;
+    padding: 5mm 6mm;
+    margin: 4mm 0 5mm 0;
+    page-break-inside: avoid;
+  }
+  .takeaway-label {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #003087;
+    margin-bottom: 2mm;
+  }
+  .takeaway-text {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 11.5pt;
+    line-height: 1.5;
+    color: #1e293b;
+    text-align: left;
+    hyphens: none;
+  }
+
+  /* TABLES --------------------------------------------------------------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 5mm 0;
+    font-size: 9.5pt;
+    table-layout: fixed;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    page-break-inside: avoid;
+  }
+  thead { display: table-header-group; }
+  th {
+    background: #003087;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+    padding: 2.8mm 3mm;
+    font-size: 9pt;
+    letter-spacing: 0.02em;
+    border: none;
+    vertical-align: top;
+  }
+  td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+    color: #1e293b;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  tbody tr:nth-child(even) td { background: #f8fafc; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.center { text-align: center; }
+  th.num { text-align: right; }
+
+  /* PILLS ---------------------------------------------------------------- */
+  .pill {
+    display: inline-block;
+    padding: 1mm 2.5mm;
+    font-size: 8.5pt;
+    font-weight: 600;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .pill-blue { background: #dbeafe; color: #003087; }
+  .pill-gold { background: #fef3c7; color: #854d0e; }
+  .pill-green { background: #dcfce7; color: #166534; }
+
+  /* HIGHLIGHT BOX ------------------------------------------------------- */
+  .highlight {
+    background: linear-gradient(135deg, #003087 0%, #0046c4 100%);
+    color: #ffffff;
+    padding: 6mm 7mm;
+    margin: 5mm 0 6mm 0;
+    page-break-inside: avoid;
+    border-radius: 1mm;
+  }
+  .highlight-label {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #FFB81C;
+    margin-bottom: 2.5mm;
+  }
+  .highlight-text {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 13pt;
+    line-height: 1.5;
+    color: #ffffff;
+    font-weight: 400;
+  }
+
+  /* GRID ----------------------------------------------------------------- */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5mm;
+    margin: 3mm 0 5mm 0;
+    page-break-inside: avoid;
+  }
+  .grid-cell {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid #003087;
+    padding: 4mm 5mm;
+  }
+  .grid-cell h4 {
+    font-size: 9.5pt;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #003087;
+    margin-bottom: 2mm;
+  }
+  .grid-cell p {
+    font-size: 9.5pt;
+    line-height: 1.5;
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  /* PAGE BREAKS ---------------------------------------------------------- */
+  .page-break { page-break-after: always; }
+
+  /* APPENDIX ------------------------------------------------------------- */
+  .appendix-list {
+    list-style: none;
+    padding: 0;
+    margin: 3mm 0;
+  }
+  .appendix-list li {
+    padding: 2mm 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 9.5pt;
+  }
+  .appendix-list li:last-child { border-bottom: none; }
+  .appendix-list code {
+    background: #f1f5f9;
+    padding: 0.5mm 1.5mm;
+    border-radius: 1mm;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 9pt;
+    color: #003087;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== COVER ========== -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-eyebrow">Business case</div>
+    <div class="cover-mark">NAF</div>
+  </div>
+  <div class="cover-mid">
+    <h1>NAF Reklamasjons&shy;system</h1>
+    <div class="cover-subtitle">Hvorfor vi har bygget det, hva det forsvarer, og hva det åpner for videre.</div>
+  </div>
+  <div class="cover-bottom">
+    <div>
+      <div class="cover-meta-label">Målgruppe</div>
+      <div class="cover-meta-value">Ledergruppe og styre</div>
+    </div>
+    <div>
+      <div class="cover-meta-label">Versjon</div>
+      <div class="cover-meta-value">1.0 · 25. april 2026</div>
+    </div>
+    <div>
+      <div class="cover-meta-label">Klassifisering</div>
+      <div class="cover-meta-value">Konfidensielt · Internt</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 1. SAMMENDRAG ========== -->
+<div class="page-block">
+<section>
+  <span class="section-num">1 · Sammendrag</span>
+  <h2>Et lite prosjekt med stort regnestykke bak seg</h2>
+
+  <div class="highlight">
+    <div class="highlight-label">Hovedbudskap</div>
+    <div class="highlight-text">NAF har bygget et eget reklamasjonssystem med en samlet investering på under 200 000 NOK, for å adressere et område som binder anslagsvis 2,0 mNOK i årlig personalkostnad og eksponerer organisasjonen for fragmentert saksbehandling og kommende tilsynskrav.</div>
+  </div>
+
+  <p>Selv en moderat effektivitetsgevinst på 10 % betaler tilbake investeringen på under 12 måneder. Utover ROI demonstrerer prosjektet også en ny utviklingsmetode — agentic-utvikling med Claude Code — som NAF kan gjenbruke for fremtidige interne verktøy til en brøkdel av tradisjonell konsulentkostnad.</p>
+</section>
+
+<!-- ========== 2. PROBLEMET ========== -->
+<section>
+  <span class="section-num">2 · Problemet</span>
+  <h2>Tre strukturelle svakheter, en gradvis utløser</h2>
+
+  <p>Reklamasjonshåndteringen i NAF har vokst frem organisk over tid, og bærer preg av tre strukturelle svakheter:</p>
+
+  <ol>
+    <li><strong>Fragmentering på tvers av kanaler.</strong> Klager kommer inn via delt e-postboks, et CRM som ikke er bygget for klagebehandling, og telefon eller papir til de enkelte sentrene. Det finnes ingen samlet sannhetsversjon for hvor en sak står.</li>
+    <li><strong>Distribuert koordineringsbyrde.</strong> Cirka 35 senterledere er involvert i 1–2 reklamasjoner per uke hver, i tillegg til 1–2 saksbehandlere på heltid sentralt. Det utgjør anslagsvis 2,5 årsverk brukt på reklamasjonsbehandling — hvorav en betydelig del går til koordinering, ikke faktisk saksløsning.</li>
+    <li><strong>Compliance-eksponering uten hard frist.</strong> GDPR, Forbrukertilsynet og bransjekrav forventer sporbar klagebehandling. NAF har ikke fått pålegg, men har heller ikke kunnet dokumentere komplett behandlingshistorikk på forespørsel. Dette er en proaktiv risikoposisjon, ikke en reaktiv brannslukking — men eksponeringen er reell.</li>
+  </ol>
+
+  <div class="takeaway">
+    <div class="takeaway-label">Hvorfor nå</div>
+    <div class="takeaway-text">Den utløsende grunnen var operasjonell smerte som hadde bygget seg over tid, kombinert med en ledelseserkjennelse av at compliance-posisjonen måtte styrkes før noen krevde det.</div>
+  </div>
+</section>
+
+<!-- ========== 3. BASELINE ========== -->
+<section>
+  <span class="section-num">3 · Baseline</span>
+  <h2>Hva vi måler mot</h2>
+
+  <table>
+    <colgroup>
+      <col style="width: 36%">
+      <col style="width: 34%">
+      <col style="width: 30%">
+    </colgroup>
+    <thead>
+      <tr><th>Variabel</th><th>Anslag</th><th>Kilde</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Saksvolum</td><td>~500–2 000 saker/år</td><td>Estimat fra fagansvarlig</td></tr>
+      <tr><td>Sentralt team</td><td>~1,5 FTE</td><td>Bekreftet</td></tr>
+      <tr><td>Senterleder-tid</td><td>~1,0 FTE samlet</td><td>Anslag, bør valideres</td></tr>
+      <tr><td><strong>Totalt arbeidsforbruk</strong></td><td><strong>~2,5 FTE</strong></td><td>Beregnet</td></tr>
+      <tr><td>Personalkostnad/år (lastet 800 kNOK/FTE)</td><td><strong>~2,0 mNOK/år</strong></td><td>Beregnet</td></tr>
+      <tr><td>Verktøystøtte før</td><td>E-post + Excel + tilpasset CRM + papir</td><td>Beskrevet</td></tr>
+      <tr><td>Sporbarhet før</td><td>Delvis, ikke systematisk</td><td>Eksponering ved tilsyn</td></tr>
+    </tbody>
+  </table>
+
+  <p>Ingen historiske KPI-data eksisterer i strukturert form. Tall for behandlingstid og konsistens må samles fra det nye systemet de første 3–6 månedene, og settes som offisiell baseline ved første kvartalsrapport.</p>
+</section>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ========== 4. LØSNINGEN ========== -->
+<div class="page-block">
+<section>
+  <span class="section-num">4 · Løsningen</span>
+  <h2>Fem byggeklosser, én flyt</h2>
+
+  <p>NAF har bygget en moderne, EU-hostet web-applikasjon som samler hele reklamasjonsprosessen i én flyt:</p>
+
+  <ul>
+    <li><strong>Saksbehandling med roller og tilgangsstyring</strong> — admin, saksbehandler og senterleder, med radnivå-sikkerhet (RLS) som scoper data per senter. Erstatter delt e-postboks og uformell oversikt.</li>
+    <li><strong>Selvbetjent kundeportal</strong> — kunder svarer på reklamasjonen via en signert lenke uten innlogging, med vedlegg. Erstatter telefon- og papirkanalen og sikrer dokumentert dialog.</li>
+    <li><strong>Vedleggshåndtering</strong> — JPG, PNG og PDF inntil 10 MB, med signerte nedlastings-URLer og RLS. Tidligere håndtert som e-postvedlegg uten kontroll.</li>
+    <li><strong>Sikkerhetsherding</strong> — sikkerhetsheaders i tråd med NAF.no-standarden, distribuert rate-limiting på offentlige endepunkter, security.txt og SECURITY.md klargjort for IT-revisjon.</li>
+    <li><strong>Sporbarhet ut av boksen</strong> — alle handlinger logges; hele saksgangen fra opprettelse til lukking er rekonstruerbar.</li>
+  </ul>
+
+  <p>Infrastrukturen ligger på Vercel (applikasjon) og Supabase (database og lagring) med dataresidens i Stockholm (EU). Transaksjonell e-post sendes via SendGrid.</p>
+</section>
+
+<!-- ========== 5. INVESTERING VS STATUS QUO ========== -->
+<section>
+  <span class="section-num">5 · Investering vs. status quo</span>
+  <h2>Regnestykket</h2>
+
+  <table>
+    <colgroup>
+      <col style="width: 50%">
+      <col style="width: 25%">
+      <col style="width: 25%">
+    </colgroup>
+    <thead>
+      <tr><th>Post</th><th class="num">Beløp</th><th>Kommentar</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Engangsinvestering</strong> (utvikling, design, sikkerhet)</td><td class="num"><strong>&lt; 200 kNOK</strong></td><td>Egen tid, lave eksterne kostnader</td></tr>
+      <tr><td>Årlig drift (Vercel + Supabase + SendGrid + Upstash)</td><td class="num">5–15 kNOK/år</td><td>Skalerer med volum</td></tr>
+      <tr><td><strong>Status quo personalkostnad/år</strong></td><td class="num"><strong>~2,0 mNOK/år</strong></td><td>2,5 FTE × 800k lastet</td></tr>
+      <tr><td>Effektivitetsgevinst som forsvarer investeringen</td><td class="num">10 % (~200 kNOK/år)</td><td>Nedre terskel</td></tr>
+      <tr><td>Effektivitetsgevinst ved realistisk ambisjon</td><td class="num">20–25 % (~400–500 kNOK/år)</td><td>Plausibelt år 2</td></tr>
+    </tbody>
+  </table>
+
+  <div class="takeaway">
+    <div class="takeaway-label">Implisitt payback</div>
+    <div class="takeaway-text">Under 12 måneder ved 10 % gevinst. Under 5 måneder ved 25 %. Tilleggsverdien — kvalitet, konsistens, compliance — er ikke kvantifisert i regnestykket, men reduserer risiko som er vanskelig å prise før den materialiserer seg som tilsynssak eller omdømmehendelse.</div>
+  </div>
+</section>
+
+<!-- ========== 6. SUKSESSKRITERIER ========== -->
+<section class="allow-break">
+  <span class="section-num">6 · Suksesskriterier</span>
+  <h2>Fem KPIer, ett kvartalsrytme</h2>
+
+  <p>Fem KPIer styres etter, kalibreres formelt etter første kvartalsmåling i drift.</p>
+
+  <table>
+    <colgroup>
+      <col style="width: 28%">
+      <col style="width: 18%">
+      <col style="width: 30%">
+      <col style="width: 24%">
+    </colgroup>
+    <thead>
+      <tr><th>KPI</th><th>Mål år 1</th><th>Hvordan måles</th><th>Driver</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Behandlingstid (dager fra opprettet til lukket)</td>
+        <td><span class="pill pill-blue">−30 %</span></td>
+        <td>Systemgenerert</td>
+        <td>Effektivitet</td>
+      </tr>
+      <tr>
+        <td>Saker per FTE per måned</td>
+        <td><span class="pill pill-blue">+20 %</span></td>
+        <td>Systemgenerert (~33 → ~40)</td>
+        <td>Effektivitet</td>
+      </tr>
+      <tr>
+        <td>Konsistens — andel saker med mal eller dokumentert begrunnelse</td>
+        <td><span class="pill pill-gold">≥ 80 %</span></td>
+        <td>Manuell stikkprøve, n = 30 per kvartal</td>
+        <td>Kvalitet</td>
+      </tr>
+      <tr>
+        <td>Sporbarhet — andel saker med fullstendig tidslinje</td>
+        <td><span class="pill pill-green">100 %</span></td>
+        <td>Systemgenerert</td>
+        <td>Compliance</td>
+      </tr>
+      <tr>
+        <td>Senterleder-byrde (minutter per uke per leder)</td>
+        <td><span class="pill pill-blue">−25 %</span></td>
+        <td>Lederundersøkelse, halvårlig (~68 → ~50 min)</td>
+        <td>Fragmentering</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Baseline for behandlingstid, saker per FTE og senterleder-byrde settes i Q1 etter idriftsettelse. Konsistens er en ny metrikk uten historisk tall. Sporbarhet er allerede oppnådd ved systemets natur.</p>
+</section>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ========== 7. AGENTIC ========== -->
+<div class="page-block">
+<section class="allow-break">
+  <span class="section-num">7 · Bygde-metoden</span>
+  <h2>Agentic-utvikling som strategisk evne</h2>
+
+  <div class="highlight">
+    <div class="highlight-label">Hovedbudskap</div>
+    <div class="highlight-text">Det viktigste resultatet er ikke selve systemet — det er at NAF nå har en repeterbar metode for å bygge interne verktøy raskt og billig.</div>
+  </div>
+
+  <p>Reklamasjonssystemet er bygget med <strong>agentic-utvikling</strong>: en arbeidsform der en menneskelig produkteier samarbeider tett med en AI-utviklingspartner (Claude Code) gjennom hele utviklingsløpet — fra idé og spesifikasjon til implementering, testing, sikkerhetsherding og produksjonssetting.</p>
+
+  <p>Tradisjonell konsulent- eller in-house-utvikling av et tilsvarende system ville krevd 6–12 ukesverk fra et utviklingsteam, til en estimert markedskostnad på <strong>1,5–4 mNOK</strong>. NAF leverte sammenliknbar funksjonalitet for <strong>under 200 kNOK</strong> — en kostnadsreduksjon i størrelsesorden 8–20×.</p>
+
+  <h3>Hvorfor dette betyr noe utover dette ene prosjektet</h3>
+
+  <div class="grid-2">
+    <div class="grid-cell">
+      <h4>Repeterbar metode</h4>
+      <p>De samme arbeidsformene — spec → plan → subagent-drevet implementering — kan gjenbrukes på nye interne verktøy. NAF har nå et bevis på at metoden virker, og en samling spesifikasjons- og plandokumenter som etablerer mønsteret.</p>
+    </div>
+    <div class="grid-cell">
+      <h4>Senker terskelen for verktøy</h4>
+      <p>Mange interne behov er for små til å forsvare et tradisjonelt utviklingsprosjekt, men store nok til at folk lager work-arounds i Excel. Med agentic-utvikling flyttes terskelen kraftig nedover, og work-arounds kan erstattes med ordentlige verktøy.</p>
+    </div>
+    <div class="grid-cell">
+      <h4>Reduserer leverandøravhengighet</h4>
+      <p>NAF eier kildekoden og driften, og kan endre systemet uten å være avhengig av en konsulent eller leverandør for hver tilpasning.</p>
+    </div>
+    <div class="grid-cell">
+      <h4>Bygger intern kompetanse</h4>
+      <p>Produkteier får dyp forståelse av løsningen gjennom hele bygningsfasen. Kunnskapen ligger i organisasjonen, ikke hos en ekstern leverandør.</p>
+    </div>
+  </div>
+
+  <h3>Kandidater for neste runde</h3>
+  <p>Illustrative — ikke prioritert: internt verktøy for medlemskapshåndtering, automatisert klagestatistikk og rapportering, intern kunnskapsbase med søk, leverandøroppfølging.</p>
+
+  <div class="takeaway">
+    <div class="takeaway-label">Ledelsesvurdering det inviteres til</div>
+    <div class="takeaway-text">Bør NAF formalisere agentic-utvikling som en egen kapabilitet — med dedikert tid, retningslinjer og en porteføljevurdering av hvilke interne verktøy som bør bygges på denne måten?</div>
+  </div>
+</section>
+
+<!-- ========== 8. ANBEFALING ========== -->
+<section class="allow-break">
+  <span class="section-num">8 · Anbefaling</span>
+  <h2>Fem konkrete neste steg</h2>
+
+  <ol>
+    <li><strong>Godkjenne business caset</strong> som offisielt grunnlag for fortsatt drift og videreutvikling av reklamasjonssystemet.</li>
+    <li><strong>Sette baseline for KPI 1, 2 og 5</strong> etter første kvartal i full produksjonsbruk; rapportere KPI-status hvert kvartal til ledergruppen.</li>
+    <li><strong>Vurdere agentic-utvikling som strategisk evne.</strong> Anbefalt nivå-1: avsette tid for å identifisere 2–3 nye interne verktøy hvor metoden kan testes på samme måte. Nivå-2: formell porteføljegjennomgang av interne verktøybehov.</li>
+    <li><strong>Compliance-validering.</strong> Be IT-sikkerhet om en formell gjennomgang av SECURITY.md mot NAFs eget rammeverk innen Q3 2026, slik at compliance-posisjonen er dokumentert før et eventuelt tilsyn.</li>
+    <li><strong>Revisitere casen ved Q4 2026</strong> med faktiske KPI-tall, og oppdatere ROI-regnestykket basert på reell drift — ikke estimat.</li>
+  </ol>
+</section>
+
+<!-- ========== APPENDIX ========== -->
+<section>
+  <span class="section-num">Vedlegg</span>
+  <h2>Referansedokumenter</h2>
+
+  <ul class="appendix-list">
+    <li><code>docs/PROSJEKTOVERSIKT.md</code> — full prosjektoversikt på norsk (levende dokument)</li>
+    <li><code>docs/PROJECT-STATUS-REPORT.pdf</code> — McKinsey-stil engelsk statusrapport</li>
+    <li><code>docs/README.md</code> — utviklerdokumentasjon</li>
+    <li><code>docs/SECURITY.md</code> — sikkerhetsdokumentasjon for IT-revisjon (under arbeid)</li>
+    <li><code>docs/future-work/</code> — parkerte initiativer og fremtidige beslutninger</li>
+  </ul>
+</section>
+</div>
+
+</body>
+</html>
