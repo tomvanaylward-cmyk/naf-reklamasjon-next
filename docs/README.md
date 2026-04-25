@@ -63,9 +63,18 @@ See [`../SECURITY.md`](../SECURITY.md) *(created during security hardening sprin
 
 ---
 
+## Future work / parked ideas
+
+Ideas we've considered but deferred — each documents what was decided, why we parked it, and the trigger to revisit.
+
+- [`future-work/2026-04-25-similar-cases-vector-search.md`](future-work/2026-04-25-similar-cases-vector-search.md) — semantic search across resolved cases (revisit at ~200 resolved cases)
+- [`future-work/2026-04-25-deployment-environments.md`](future-work/2026-04-25-deployment-environments.md) — environment isolation strategy and upgrade path (currently Level 1 / preview URLs only)
+
+---
+
 ## Development workflow
 
 1. **Brainstorm** — design spec written to `docs/superpowers/specs/`
 2. **Plan** — implementation plan written to `docs/superpowers/plans/`
 3. **Implement** — subagent-driven development with spec + code quality review per task
-4. **Deploy** — push to `main` → Vercel auto-deploys to production
+4. **Deploy** — feature branch → preview URL → PR → merge to main → Vercel deploys to production
