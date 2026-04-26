@@ -2,14 +2,14 @@
 
 **Målgruppe:** NAFs ledergruppe og styre
 **Dato:** 2026-04-25
-**Status:** Investering gjennomført, drift ferskt påbegynt
+**Status:** Investering gjennomført, drift nylig påbegynt
 **Forfatter:** Tom Aylward
 
 ---
 
 ## 1. Sammendrag
 
-NAF har bygget et eget reklamasjonssystem med en samlet investering på **under 200 000 NOK**, for å adressere et område som i dag binder anslagsvis **2,0 mNOK i årlig personalkostnad** og eksponerer organisasjonen for fragmentert saksbehandling og kommende tilsynskrav. Selv en moderat effektivitetsgevinst på 10 % betaler tilbake investeringen på under 12 måneder. Utover ROI demonstrerer prosjektet også en **ny utviklingsmetode** — agentic-utvikling med Claude Code — som NAF kan gjenbruke for fremtidige interne verktøy til en brøkdel av tradisjonell konsulentkostnad.
+NAF har bygget et eget reklamasjonssystem med en samlet investering på **under 200 000 NOK**, for å adressere et område som i dag koster anslagsvis **2,0 mNOK i året i personalkostnader** og eksponerer organisasjonen for fragmentert saksbehandling og kommende tilsynskrav. Selv en moderat effektivitetsgevinst på 10 % betaler tilbake investeringen på under 12 måneder. Utover ROI demonstrerer prosjektet også en **ny utviklingsmetode** — agentic-utvikling med Claude Code — som NAF kan gjenbruke for fremtidige interne verktøy til en brøkdel av tradisjonell konsulentkostnad.
 
 ---
 
@@ -17,13 +17,13 @@ NAF har bygget et eget reklamasjonssystem med en samlet investering på **under 
 
 Reklamasjonshåndteringen i NAF har vokst frem organisk over tid, og bærer preg av tre strukturelle svakheter:
 
-1. **Fragmentering på tvers av kanaler.** Klager kommer inn via delt e-postboks, et CRM som ikke er bygget for klagebehandling, og telefon/papir til de enkelte sentrene. Det finnes ingen samlet sannhetsversjon for hvor en sak står.
+1. **Fragmentering på tvers av kanaler.** Klager kommer inn via delt e-postboks, et CRM som ikke er bygget for klagebehandling, og telefon/papir til de enkelte sentrene. Det finnes ingen felles oversikt over hvor en sak står.
 
 2. **Distribuert koordineringsbyrde.** Cirka 35 senterledere er involvert i 1–2 reklamasjoner per uke hver, i tillegg til 1–2 saksbehandlere på heltid sentralt. Det utgjør anslagsvis **2,5 årsverk** brukt på reklamasjonsbehandling — hvorav en betydelig del går til koordinering, ikke faktisk saksløsning.
 
-3. **Compliance-eksponering uten hard frist.** GDPR, Forbrukertilsynet og bransjekrav forventer sporbar klagebehandling. NAF har ikke fått pålegg, men har heller ikke kunnet dokumentere komplett behandlingshistorikk på forespørsel. Dette er en proaktiv risikoposisjon, ikke en reaktiv brannslukking — men eksponeringen er reell.
+3. **Compliance-eksponering uten fastsatt frist.** GDPR, Forbrukertilsynet og bransjekrav forventer sporbar klagebehandling. NAF har ikke fått pålegg, men har heller ikke kunnet dokumentere komplett behandlingshistorikk på forespørsel. Dette er en proaktiv risikoposisjon, ikke en reaktiv brannslukking — men eksponeringen er reell.
 
-Den utløsende grunnen til prosjektet var **operasjonell smerte som hadde bygget seg over tid**, kombinert med en ledelseserkjennelse av at compliance-posisjonen måtte styrkes før noen krevde det.
+Den utløsende grunnen til prosjektet var **driftsutfordringer som hadde bygget seg over tid**, kombinert med en ledelseserkjennelse av at compliance-posisjonen måtte styrkes før noen krevde det.
 
 ---
 
@@ -47,11 +47,11 @@ Ingen historiske KPI-data eksisterer i strukturert form. Tall for behandlingstid
 
 NAF har bygget en moderne, EU-hostet web-applikasjon som samler hele reklamasjonsprosessen i én flyt:
 
-- **Saksbehandling med roller og tilgangsstyring** — admin, saksbehandler og senterleder, med radnivå-sikkerhet (RLS) som scoper data per senter. Erstatter delt e-postboks og uformell oversikt.
+- **Saksbehandling med roller og tilgangsstyring** — admin, saksbehandler og senterleder, med radnivå-sikkerhet (RLS) som avgrenser data per senter. Erstatter delt e-postboks og uformell oversikt.
 - **Selvbetjent kundeportal** — kunder svarer på reklamasjonen via en signert lenke uten innlogging, med vedlegg. Erstatter telefon- og papirkanalen og sikrer dokumentert dialog.
 - **Vedleggshåndtering** — JPG, PNG og PDF inntil 10 MB, med signerte nedlastings-URLer og RLS. Tidligere håndtert som e-postvedlegg uten kontroll.
 - **Sikkerhetsherding** — sikkerhetsheaders i tråd med NAF.no-standarden, distribuert rate-limiting på offentlige endepunkter, security.txt og SECURITY.md klargjort for IT-revisjon.
-- **Sporbarhet ut av boksen** — alle handlinger logges, hele saksgangen fra opprettelse til lukking er rekonstruerbar.
+- **Innebygd sporbarhet** — alle handlinger logges, hele saksgangen fra opprettelse til lukking er rekonstruerbar.
 
 Infrastrukturen ligger på Vercel (applikasjon) og Supabase (database og lagring) med dataresidens i Stockholm (EU). Transaksjonell e-post sendes via SendGrid.
 
@@ -88,11 +88,11 @@ Baseline for #1, #2 og #5 settes i Q1 etter idriftsettelse. #3 er en ny metrikk 
 
 ---
 
-## 7. Bygde-metoden — agentic-utvikling som strategisk evne
+## 7. Byggemetoden — agentic-utvikling som strategisk evne
 
 > **Hovedbudskap:** Det viktigste resultatet er ikke selve systemet — det er at NAF nå har en repeterbar metode for å bygge interne verktøy raskt og billig.
 
-Reklamasjonssystemet er bygget med **agentic-utvikling**: en arbeidsform der en menneskelig produkteier samarbeider tett med en AI-utviklingspartner (Claude Code) gjennom hele utviklingsløpet — fra idé og spesifikasjon til implementering, testing, sikkerhetsherding og produksjonssetting. Tradisjonell konsulent- eller in-house-utvikling av et tilsvarende system ville krevd 6–12 ukesverk fra et utviklingsteam, til en estimert markedskostnad på **1,5–4 mNOK**. NAF leverte sammenliknbar funksjonalitet for **under 200 kNOK** — en kostnadsreduksjon i størrelsesorden 8–20×.
+Reklamasjonssystemet er bygget med **agentic-utvikling**: en arbeidsform der en menneskelig produkteier samarbeider tett med en AI-utviklingspartner (Claude Code) gjennom hele utviklingsløpet — fra idé og spesifikasjon til implementering, testing, sikkerhetsherding og produksjonssetting. Tradisjonell konsulent- eller intern utvikling av et tilsvarende system ville krevd 6–12 ukesverk fra et utviklingsteam, til en estimert markedskostnad på **1,5–4 mNOK**. NAF leverte sammenliknbar funksjonalitet for **under 200 kNOK** — en kostnadsreduksjon i størrelsesorden 8–20×.
 
 **Hvorfor dette betyr noe utover dette ene prosjektet:**
 
@@ -103,7 +103,7 @@ Reklamasjonssystemet er bygget med **agentic-utvikling**: en arbeidsform der en 
 
 **Kandidater for neste runde** (illustrative — ikke prioritert): internt verktøy for medlemskapshåndtering, automatisert klagestatistikk og rapportering, intern kunnskapsbase med søk, leverandøroppfølging.
 
-**Ledelsesvurdering det inviteres til:** Bør NAF formalisere agentic-utvikling som en egen kapabilitet — med dedikert tid, retningslinjer og en porteføljevurdering av hvilke interne verktøy som bør bygges på denne måten?
+**Ledelsesvurdering det inviteres til:** Bør NAF formalisere agentic-utvikling som en egen evne — med dedikert tid, retningslinjer og en porteføljevurdering av hvilke interne verktøy som bør bygges på denne måten?
 
 ---
 
@@ -113,7 +113,7 @@ Reklamasjonssystemet er bygget med **agentic-utvikling**: en arbeidsform der en 
 2. **Sette baseline for KPI #1, #2 og #5** etter første kvartal i full produksjonsbruk; rapportere KPI-status hvert kvartal til ledergruppen.
 3. **Vurdere agentic-utvikling som strategisk evne.** Anbefalt nivå-1: avsette tid for å identifisere 2–3 nye interne verktøy hvor metoden kan testes på samme måte. Nivå-2: formell porteføljegjennomgang av interne verktøybehov.
 4. **Compliance-validering.** Be IT-sikkerhet om en formell gjennomgang av SECURITY.md mot NAFs eget rammeverk innen Q3 2026, slik at compliance-posisjonen er dokumentert før et eventuelt tilsyn.
-5. **Revisitere casen ved Q4 2026** med faktiske KPI-tall, og oppdatere ROI-regnestykket basert på reell drift — ikke estimat.
+5. **Gjennomgå casen på nytt ved Q4 2026** med faktiske KPI-tall, og oppdatere ROI-regnestykket basert på reell drift — ikke estimat.
 
 ---
 
