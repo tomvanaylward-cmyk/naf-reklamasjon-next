@@ -99,7 +99,7 @@ Reklamasjonssystemet er bygget med **agentic-utvikling**: en arbeidsform der en 
 - **Repeterbar metode.** De samme arbeidsformene — spec → plan → subagent-drevet implementering — kan gjenbrukes på nye interne verktøy. NAF har nå et bevis på at metoden virker, og en samling spesifikasjons- og plandokumenter som etablerer mønsteret.
 - **Senker terskelen for "gode interne verktøy".** Mange interne behov i NAF er for små til å forsvare et tradisjonelt utviklingsprosjekt, men store nok til at folk lager work-arounds i Excel. Med agentic-utvikling flyttes terskelen kraftig nedover, og work-arounds kan erstattes med ordentlige verktøy.
 - **Reduserer leverandøravhengighet.** NAF eier kildekoden og driften, og kan endre systemet uten å være avhengig av en konsulent eller leverandør for hver tilpasning.
-- **Bygger intern kompetanse.** Produkteier får dyp forståelse av løsningen gjennom hele bygningsfasen. Kunnskapen ligger i organisasjonen, ikke hos en ekstern leverandør.
+- **Bygger intern kompetanse.** Produkteier får dyp forståelse av løsningen gjennom hele byggefasen. Kunnskapen ligger i organisasjonen, ikke hos en ekstern leverandør.
 
 **Kandidater for neste runde** (illustrative — ikke prioritert): internt verktøy for medlemskapshåndtering, automatisert klagestatistikk og rapportering, intern kunnskapsbase med søk, leverandøroppfølging.
 

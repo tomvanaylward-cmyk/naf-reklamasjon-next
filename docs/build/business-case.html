@@ -143,12 +143,16 @@
     padding-top: 4mm;
   }
   section {
-    page-break-inside: avoid;
     margin-bottom: 9mm;
-  }
-  section.allow-break {
     page-break-inside: auto;
   }
+  /* Keep section header glued to its first content block */
+  section .section-num,
+  section h2 {
+    page-break-after: avoid;
+  }
+  /* Keep h3 with at least the next paragraph */
+  h3 { page-break-after: avoid; }
 
   .section-num {
     display: inline-block;
@@ -272,7 +276,7 @@
     hyphens: auto;
   }
   tbody tr:nth-child(even) td { background: #f8fafc; }
-  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
   td.center { text-align: center; }
   th.num { text-align: right; }
 
@@ -380,7 +384,7 @@
   </div>
   <div class="cover-mid">
     <h1>NAF Reklamasjons&shy;system</h1>
-    <div class="cover-subtitle">Hvorfor vi har bygget det, hva det forsvarer, og hva det åpner for videre.</div>
+    <div class="cover-subtitle">Hvorfor vi har bygget det, hva det forsvarer, og veien videre.</div>
   </div>
   <div class="cover-bottom">
     <div>
@@ -460,7 +464,7 @@
 </section>
 </div>
 
-<div class="page-break"></div>
+<!-- natural flow; only §7 gets a forced break -->
 
 <!-- ========== 4. LØSNINGEN ========== -->
 <div class="page-block">
@@ -513,7 +517,7 @@
 <!-- ========== 6. SUKSESSKRITERIER ========== -->
 <section class="allow-break">
   <span class="section-num">6 · Suksesskriterier</span>
-  <h2>Fem KPIer, ett kvartalsrytme</h2>
+  <h2>Fem KPIer, én kvartalsrytme</h2>
 
   <p>Fem KPIer styres etter, kalibreres formelt etter første kvartalsmåling i drift.</p>
 
@@ -565,10 +569,10 @@
 </section>
 </div>
 
-<div class="page-break"></div>
+<!-- natural flow; only §7 gets a forced break -->
 
 <!-- ========== 7. AGENTIC ========== -->
-<div class="page-block">
+<div class="page-block" style="page-break-before: always;">
 <section class="allow-break">
   <span class="section-num">7 · Bygde-metoden</span>
   <h2>Agentic-utvikling som strategisk evne</h2>
@@ -599,7 +603,7 @@
     </div>
     <div class="grid-cell">
       <h4>Bygger intern kompetanse</h4>
-      <p>Produkteier får dyp forståelse av løsningen gjennom hele bygningsfasen. Kunnskapen ligger i organisasjonen, ikke hos en ekstern leverandør.</p>
+      <p>Produkteier får dyp forståelse av løsningen gjennom hele byggefasen. Kunnskapen ligger i organisasjonen, ikke hos en ekstern leverandør.</p>
     </div>
   </div>
 
