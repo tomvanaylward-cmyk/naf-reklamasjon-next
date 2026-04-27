@@ -2,7 +2,7 @@
 export type CaseStatus = 'ny' | 'open' | 'waiting' | 'eskalert' | 'closed';
 export type CasePriority = 'low' | 'normal' | 'high' | 'critical';
 export type MessageType = 'customer' | 'agent' | 'internal';
-export type UserRole = 'admin' | 'saksbehandler' | 'senterleder';
+export type UserRole = 'admin' | 'overordnet' | 'reklamasjonsansvarlig' | 'senterleder';
 export type CaseOutcome = 'approved' | 'partial' | 'rejected' | 'dropped';
 
 export interface Case {

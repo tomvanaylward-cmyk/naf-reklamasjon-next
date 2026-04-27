@@ -87,7 +87,7 @@ export default function SaksbehandlingPage() {
       const { data: agentData } = await db
         .from('profiles')
         .select('id, email, full_name, role, senter')
-        .in('role', ['saksbehandler', 'admin'])
+        .in('role', ['reklamasjonsansvarlig', 'overordnet', 'admin'])
         .order('full_name');
       setAgents((agentData as Profile[]) || []);
       const { data: tplData } = await db
@@ -220,7 +220,7 @@ export default function SaksbehandlingPage() {
       case_id:     activeCase.id,
       type:        'internal',
       sender_name: '🔁 System',
-      content:     `Saken ble eskalert av ${currentUser.full_name || currentUser.email} til saksbehandler`,
+      content:     `Saken ble eskalert av ${currentUser.full_name || currentUser.email} til reklamasjonsansvarlig`,
       created_at:  now,
     };
     await db.from('messages').insert(msg);
@@ -558,7 +558,7 @@ export default function SaksbehandlingPage() {
                       {currentUser?.role === 'senterleder' && activeCase.status !== 'eskalert' && activeCase.status !== 'closed' && (
                         <button onClick={() => { escalateCase(); setShowMoreMenu(false); }}
                           className="w-full text-left px-4 py-2 text-[13px] text-orange-700 hover:bg-orange-50 cursor-pointer">
-                          🔺 Eskaler til saksbehandler
+                          🔺 Eskaler til reklamasjonsansvarlig
                         </button>
                       )}
                       <a href="/eksport"
@@ -843,7 +843,7 @@ export default function SaksbehandlingPage() {
                         </button>
                       )}
                       <span className="text-[11px] text-gray-300 select-none truncate">
-                        {replyType === 'email' ? `Til: ${activeCase.customer_email}` : 'Vises kun for saksbehandlere'}
+                        {replyType === 'email' ? `Til: ${activeCase.customer_email}` : 'Vises kun for reklamasjonsansvarlig'}
                       </span>
                     </div>
                     <button onClick={sendReply} disabled={!replyText.trim()}

@@ -12,7 +12,7 @@ This document describes the security posture of the NAF Reklamasjonssystem. A pr
 
 The NAF Reklamasjonssystem is an internal case management tool for handling customer complaints at NAF centres. It has two audiences:
 
-- **Internal staff** (saksbehandlere, senterleder, admin): log in to view, manage, and respond to cases
+- **Internal staff** (reklamasjonsansvarlig, senterleder, overordnet, admin): log in to view, manage, and respond to cases
 - **Customers** (public): submit complaints via `/ny-reklamasjon`, and reply to agent emails via a token-protected portal at `/svar/[case_id]`
 
 The application is hosted on Vercel (`naf-reklamasjon-next.vercel.app`) and uses Supabase for database, authentication, and file storage.
@@ -23,10 +23,10 @@ The application is hosted on Vercel (`naf-reklamasjon-next.vercel.app`) and uses
 
 | Data type | Where stored | Who can access | Notes |
 |-----------|-------------|----------------|-------|
-| Customer name, email, phone | Supabase PostgreSQL (eu-north-1) | Saksbehandler, senterleder (own centre), admin | RLS enforced |
-| Complaint description and details | Supabase PostgreSQL (eu-north-1) | Saksbehandler, senterleder (own centre), admin | RLS enforced |
-| Case messages (agent replies, customer replies) | Supabase PostgreSQL (eu-north-1) | Saksbehandler, senterleder (own centre), admin | Internal notes never shown to customers |
-| File attachments (photos, PDFs) | Supabase Storage (eu-north-1) | Saksbehandler, senterleder (own centre), admin | Signed 60-minute download URLs; never publicly accessible |
+| Customer name, email, phone | Supabase PostgreSQL (eu-north-1) | Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin | RLS enforced |
+| Complaint description and details | Supabase PostgreSQL (eu-north-1) | Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin | RLS enforced |
+| Case messages (agent replies, customer replies) | Supabase PostgreSQL (eu-north-1) | Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin | Internal notes never shown to customers |
+| File attachments (photos, PDFs) | Supabase Storage (eu-north-1) | Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin | Signed 60-minute download URLs; never publicly accessible |
 | Session tokens | Supabase Auth — httpOnly cookies | Browser only | JWTs; expire per Supabase default |
 | Reply tokens | Supabase PostgreSQL — `cases.reply_token` column | Server-side only | UUID (122-bit entropy); never logged |
 | Email content | SendGrid (transient) | Not stored by SendGrid after delivery | Transactional only |
@@ -56,10 +56,11 @@ Supabase Auth handles all authentication. Users log in with email + password. Se
 Three roles are defined in the `profiles.role` column:
 
 | Role | Access |
-|------|--------|
-| `admin` | Full access to all cases, all centres, user management |
-| `saksbehandler` | All cases across all centres; cannot manage users |
-| `senterleder` | Cases belonging to their own centre only |
+|---|---|
+| `admin` | Everything, including user management |
+| `overordnet` | Everything, including user management (same as admin) |
+| `reklamasjonsansvarlig` | All cases across all centres; cannot manage users |
+| `senterleder` | Only own centre's cases (RLS-enforced) |
 
 ### Row-Level Security (RLS)
 All database tables have RLS enabled. Supabase enforces access at the database layer — application bugs cannot expose data from other centres.

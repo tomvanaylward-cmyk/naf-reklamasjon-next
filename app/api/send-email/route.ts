@@ -115,11 +115,11 @@ export async function POST(req: NextRequest) {
       const { data: handlers } = await adminDb
         .from('profiles')
         .select('email')
-        .in('role', ['saksbehandler', 'admin']);
+        .in('role', ['reklamasjonsansvarlig', 'overordnet', 'admin']);
 
       const recipients = (handlers || []).map((h: { email: string }) => h.email).filter(Boolean);
       if (recipients.length === 0) {
-        return NextResponse.json({ ok: true, sent: false, reason: 'No saksbehandlere found' });
+        return NextResponse.json({ ok: true, sent: false, reason: 'No reklamasjonsansvarlig found' });
       }
 
       subject = `🔺 Sak eskalert – ${esc(caseId)}`;
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
         <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto">
           ${nafHeader('Reklamasjonssystem – Eskalering')}
           <div style="background:#fff8f0;border:1px solid #fde8d0;border-radius:0 0 8px 8px;padding:24px">
-            <h2 style="margin:0 0 12px;color:#92400E;font-size:18px">🔺 En sak er eskalert til saksbehandler</h2>
+            <h2 style="margin:0 0 12px;color:#92400E;font-size:18px">🔺 En sak er eskalert til reklamasjonsansvarlig</h2>
             <table style="width:100%;border-collapse:collapse;font-size:14px">
               <tr><td style="padding:6px 0;color:#6B7280;width:120px">Saksnummer</td><td style="font-weight:600;color:#003087;font-family:monospace">${esc(caseId)}</td></tr>
               <tr><td style="padding:6px 0;color:#6B7280">Kunde</td><td style="font-weight:600">${esc(caseName)}</td></tr>
@@ -147,7 +147,10 @@ export async function POST(req: NextRequest) {
 
     } else if (type === 'registration_notify') {
       const { applicantName, applicantEmail, senter: applicantSenter } = body;
-      const { data: admins } = await adminDb.from('profiles').select('email').eq('role', 'admin');
+      const { data: admins } = await adminDb
+        .from('profiles')
+        .select('email')
+        .in('role', ['admin', 'overordnet']);
       const recipients = (admins || []).map((a: { email: string }) => a.email).filter(Boolean);
       if (recipients.length === 0) {
         return NextResponse.json({ ok: true, sent: false, reason: 'No admins found' });

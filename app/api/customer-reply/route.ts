@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Noe gikk galt' }, { status: 500 });
     }
 
-    // Notify saksbehandler — fire and forget
+    // Notify reklamasjonsansvarlig — fire and forget
     notifySaksbehandler(caseRow, content.trim()).catch(err =>
       console.error('customer-reply notify error:', err),
     );
@@ -122,7 +122,7 @@ async function notifySaksbehandler(
     const { data: handlers } = await adminDb
       .from('profiles')
       .select('email')
-      .in('role', ['saksbehandler', 'admin']);
+      .in('role', ['reklamasjonsansvarlig', 'overordnet', 'admin']);
     recipients = ((handlers ?? []) as { email: string }[])
       .map(h => h.email)
       .filter(Boolean);

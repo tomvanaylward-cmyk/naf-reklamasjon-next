@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { db } from '@/lib/supabase';
 import { calculateSLADeadline } from '@/lib/sla';
 import { validateFile, formatFileSize, MAX_FILES } from '@/lib/attachments';
+import { NAF_SENTRE } from '@/lib/sentre';
 
 const KATEGORIER = [
   'Dekkskifte',
@@ -12,19 +13,6 @@ const KATEGORIER = [
   'Faktura / pris',
   'Kundebehandling',
   'Annet',
-];
-
-const SENTRE = [
-  'NAF Senter Oslo',
-  'NAF Senter Bergen',
-  'NAF Senter Trondheim',
-  'NAF Senter Stavanger',
-  'NAF Senter Kristiansand',
-  'NAF Senter Tromsø',
-  'NAF Senter Drammen',
-  'NAF Senter Fredrikstad',
-  'NAF Senter Ålesund',
-  'NAF Senter Bodø',
 ];
 
 function generateCaseId(): string {
@@ -159,7 +147,7 @@ export default function NyReklamasjonPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Reklamasjon mottatt</h1>
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-            Vi har mottatt din reklamasjon og sender deg en bekreftelse på e-post. En saksbehandler vil ta kontakt innen 2 virkedager.
+            Vi har mottatt din reklamasjon og sender deg en bekreftelse på e-post. Vi vil ta kontakt innen 2 virkedager.
           </p>
           <div className="bg-[#F5F6FA] border border-gray-200 rounded-xl px-5 py-4 mb-6">
             <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Saksnummer</div>
@@ -242,7 +230,7 @@ export default function NyReklamasjonPage() {
               <Field label="NAF-senter">
                 <select value={form.senter} onChange={e => set('senter', e.target.value)} className={inputCls}>
                   <option value="">Velg senter</option>
-                  {SENTRE.map(s => <option key={s} value={s}>{s}</option>)}
+                  {NAF_SENTRE.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </Field>
             </div>

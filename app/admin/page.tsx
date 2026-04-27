@@ -5,36 +5,20 @@ import { useRouter } from 'next/navigation';
 import { db, getCurrentUser } from '@/lib/supabase';
 import type { Profile, UserRole, PendingRegistration } from '@/lib/types';
 import Navbar from '@/components/Navbar';
-
-const SENTRE = [
-  'NAF Senter Oslo',
-  'NAF Senter Bergen',
-  'NAF Senter Trondheim',
-  'NAF Senter Stavanger',
-  'NAF Senter Kristiansand',
-  'NAF Senter Tromsø',
-  'NAF Senter Drammen',
-  'NAF Senter Fredrikstad',
-  'NAF Senter Ålesund',
-  'NAF Senter Bodø',
-];
+import { NAF_SENTRE } from '@/lib/sentre';
 
 const ROLE_LABEL: Record<UserRole, string> = {
-  senterleder:   'Senterleder',
-  saksbehandler: 'Saksbehandler',
-  admin:         'Administrator',
+  senterleder:           'Senterleder',
+  reklamasjonsansvarlig: 'Reklamasjonsansvarlig',
+  overordnet:            'Overordnet',
+  admin:                 'Administrator',
 };
 
 const ROLE_COLORS: Record<UserRole, string> = {
-  senterleder:   'bg-sky-100 text-sky-700',
-  saksbehandler: 'bg-emerald-100 text-emerald-700',
-  admin:         'bg-purple-100 text-purple-700',
-};
-
-const ROLE_CYCLE: Record<UserRole, UserRole> = {
-  senterleder:   'saksbehandler',
-  saksbehandler: 'admin',
-  admin:         'senterleder',
+  senterleder:           'bg-sky-100 text-sky-700',
+  reklamasjonsansvarlig: 'bg-emerald-100 text-emerald-700',
+  overordnet:            'bg-amber-100 text-amber-700',
+  admin:                 'bg-purple-100 text-purple-700',
 };
 
 export default function AdminPage() {
@@ -66,14 +50,14 @@ export default function AdminPage() {
     (async () => {
       const user = await getCurrentUser();
       if (!user)                    { router.push('/login');           return; }
-      if (user.role !== 'admin')    { router.push('/saksbehandling'); return; }
+      if (user.role !== 'admin' && user.role !== 'overordnet') { router.push('/saksbehandling'); return; }
       setCurrentUser(user);
       await loadData();
     })();
   }, [router, loadData]);
 
-  async function cycleRole(profile: Profile) {
-    const newRole = ROLE_CYCLE[profile.role];
+  async function changeRole(profile: Profile, newRole: UserRole) {
+    if (newRole === profile.role) return;
     setUpdating(profile.id);
     setMessage('');
     try {
@@ -264,7 +248,7 @@ export default function AdminPage() {
             <div className="px-5 py-4 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-700">Brukere ({profiles.length})</h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                Klikk på en bruker for å redigere. Klikk på rollen for å endre den.
+                Klikk på en bruker for å redigere. Bruk rollvelgeren for å endre rolle.
               </p>
             </div>
             <div className="divide-y divide-gray-50">
@@ -292,21 +276,26 @@ export default function AdminPage() {
                       className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none bg-white text-gray-600 cursor-pointer hover:border-[#003087] transition-colors w-48"
                     >
                       <option value="">Ikke tilordnet senter</option>
-                      {SENTRE.map(s => (
+                      {NAF_SENTRE.map(s => (
                         <option key={s} value={s}>{s.replace('NAF Senter ', '')}</option>
                       ))}
                     </select>
-                    <button
-                      onClick={e => { e.stopPropagation(); cycleRole(profile); }}
+                    <select
+                      value={profile.role}
+                      onChange={e => { e.stopPropagation(); changeRole(profile, e.target.value as UserRole); }}
+                      onClick={e => e.stopPropagation()}
                       disabled={updating === profile.id || profile.id === currentUser.id}
-                      title={profile.id === currentUser.id ? 'Kan ikke endre din egen rolle' : `Klikk for å endre til ${ROLE_LABEL[ROLE_CYCLE[profile.role]]}`}
-                      className={`text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all border-2 border-transparent hover:border-gray-300
+                      title={profile.id === currentUser.id ? 'Kan ikke endre din egen rolle' : 'Endre rolle'}
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all border-2 border-transparent hover:border-gray-300 outline-none
                         ${ROLE_COLORS[profile.role]}
                         ${profile.id === currentUser.id ? 'opacity-40 cursor-not-allowed' : ''}
                         ${updating === profile.id ? 'opacity-50' : ''}`}
                     >
-                      {updating === profile.id ? '...' : ROLE_LABEL[profile.role]}
-                    </button>
+                      <option value="senterleder">Senterleder</option>
+                      <option value="reklamasjonsansvarlig">Reklamasjonsansvarlig</option>
+                      <option value="overordnet">Overordnet</option>
+                      <option value="admin">Administrator</option>
+                    </select>
                     <span className="text-gray-300 text-xs">{expandedId === profile.id ? '▲' : '▼'}</span>
                   </div>
 

@@ -28,7 +28,7 @@ export default function LoginPage() {
           <span className="font-semibold text-gray-800">Reklamasjonssystem</span>
         </div>
         <h1 className="text-xl font-bold text-gray-900 mb-1">Logg inn</h1>
-        <p className="text-sm text-gray-400 mb-6">For saksbehandlere og administratorer</p>
+        <p className="text-sm text-gray-400 mb-6">For reklamasjonsansvarlig og administratorer</p>
         {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-3 text-sm mb-4">{error}</div>}
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
