@@ -61,6 +61,8 @@ export default function DashboardPage() {
 
   const openCases = cases.filter(c => c.status !== 'closed');
   const overSLA = openCases.filter(c => c.sla_deadline && new Date(c.sla_deadline) < new Date());
+  const escalated = cases.filter(c => c.status === 'eskalert');
+  const isStaff = currentUser?.role === 'admin' || currentUser?.role === 'overordnet' || currentUser?.role === 'reklamasjonsansvarlig';
   const totalEstCost = cases.reduce((s, c) => s + (c.cost_estimated || 0), 0);
   const totalActCost = cases.reduce((s, c) => s + (c.cost_actual || 0), 0);
 
@@ -178,6 +180,29 @@ export default function DashboardPage() {
               </Link>
             </div>
           </div>
+
+          {/* Eskalert-banner — klikkbar varsling for staff når det finnes eskalerte saker */}
+          {isStaff && escalated.length > 0 && (
+            <Link
+              href="/saksbehandling?filter=eskalert"
+              className="flex items-center justify-between gap-4 mb-4 px-5 py-3 bg-orange-50 border-2 border-orange-300 rounded-xl no-underline hover:bg-orange-100 hover:border-orange-400 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔺</span>
+                <div>
+                  <p className="text-sm font-bold text-orange-800">
+                    {escalated.length} {escalated.length === 1 ? 'eskalert sak venter' : 'eskalerte saker venter'} på handling
+                  </p>
+                  <p className="text-xs text-orange-700 mt-0.5">
+                    Eskalert fra senterleder til reklamasjonsansvarlig — krever oppfølging
+                  </p>
+                </div>
+              </div>
+              <span className="text-sm font-semibold text-orange-700 group-hover:text-orange-900">
+                Åpne liste →
+              </span>
+            </Link>
+          )}
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -322,7 +347,7 @@ export default function DashboardPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                      <th className="text-left pb-2 pr-4">Saksbehandler</th>
+                      <th className="text-left pb-2 pr-4">Reklamasjonsansvarlig</th>
                       <th className="text-right pb-2 px-3">Åpne saker</th>
                       <th className="text-right pb-2 px-3">Lukket (periode)</th>
                       <th className="text-right pb-2 px-3">Snitt ledetid</th>

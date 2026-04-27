@@ -61,13 +61,19 @@ export default function SaksbehandlingPage() {
   const statusFiltered = filter === 'alle' ? allCases : allCases.filter(c => c.status === filter);
   const filteredCases = useMemo(() => {
     const q = search.trim().toLowerCase().replace(/\s/g, '');
-    if (!q) return statusFiltered;
-    return statusFiltered.filter(c => {
+    const base = !q ? statusFiltered : statusFiltered.filter(c => {
       const hay = [
         c.customer_name, c.customer_email, c.case_id, c.category,
         c.senter, c.reg_nr, c.company, c.order_number, c.description,
       ].filter(Boolean).join(' ').toLowerCase().replace(/\s/g, '');
       return hay.includes(q);
+    });
+    // Sort eskalerte saker øverst (krever handling fra reklamasjonsansvarlig).
+    // Innenfor hver gruppe beholdes opprinnelig sortering (created_at desc fra Supabase).
+    return [...base].sort((a, b) => {
+      const aEsc = a.status === 'eskalert' ? 0 : 1;
+      const bEsc = b.status === 'eskalert' ? 0 : 1;
+      return aEsc - bEsc;
     });
   }, [statusFiltered, search]);
   const activeCaseIdx = activeCase ? filteredCases.findIndex(c => c.id === activeCase.id) : -1;
@@ -75,6 +81,17 @@ export default function SaksbehandlingPage() {
   const loadCases = useCallback(async () => {
     const { data } = await db.from('cases').select('*').order('created_at', { ascending: false });
     setAllCases((data as Case[]) || []);
+  }, []);
+
+  // Les ?filter=eskalert (e.l.) fra URL og forhåndsvelg ved mount.
+  // Brukes f.eks. fra eskalert-banneret på dashboardet.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const f = params.get('filter');
+    if (f && ['alle','ny','open','waiting','eskalert','closed'].includes(f)) {
+      setFilter(f);
+    }
   }, []);
 
   // Load user, cases, agents on mount
@@ -349,9 +366,11 @@ export default function SaksbehandlingPage() {
     costDiffCls = d > 0 ? 'text-red-600' : 'text-emerald-600';
   }
 
-  const openCount    = allCases.filter(c => c.status === 'open' || c.status === 'waiting').length;
-  const newCount     = allCases.filter(c => c.status === 'ny').length;
-  const closedCount  = allCases.filter(c => c.status === 'closed').length;
+  const openCount     = allCases.filter(c => c.status === 'open' || c.status === 'waiting').length;
+  const newCount      = allCases.filter(c => c.status === 'ny').length;
+  const closedCount   = allCases.filter(c => c.status === 'closed').length;
+  const escalatedCount = allCases.filter(c => c.status === 'eskalert').length;
+  const isStaff = currentUser?.role === 'admin' || currentUser?.role === 'overordnet' || currentUser?.role === 'reklamasjonsansvarlig';
   const similarCases = activeCase
     ? allCases.filter(x => x.id !== activeCase.id && x.category === activeCase.category && x.status === 'closed').slice(0, 3)
     : [];
@@ -410,26 +429,41 @@ export default function SaksbehandlingPage() {
                 </button>
               )}
             </div>
-            {/* Stats — clickable quick filters */}
+            {/* Stats — clickable quick filters.
+                For staff (admin/overordnet/reklamasjonsansvarlig) vises Eskalert i stedet for Lukket,
+                fordi eskalerte saker er det som krever handling. Senterleder ser fortsatt Lukket. */}
             <div className="grid grid-cols-3 gap-1.5 mb-2.5">
-              {([['Åpne', openCount, 'open'], ['Nye', newCount, 'ny'], ['Lukket', closedCount, 'closed']] as const).map(([label, count, f]) => (
-                <button key={label} onClick={() => setFilter(filter === f ? 'alle' : f)}
-                  className={`rounded-lg p-2 text-center border transition-colors cursor-pointer
-                    ${filter === f
-                      ? 'bg-[#003087] border-[#003087] text-white'
-                      : 'bg-white border-gray-200 hover:border-[#003087]/40'}`}>
-                  <div className={`text-[1.2rem] font-bold font-mono ${filter === f ? 'text-white' : 'text-[#003087]'}`}>{count}</div>
-                  <div className={`text-[10px] font-semibold uppercase tracking-wide ${filter === f ? 'text-white/80' : 'text-gray-400'}`}>{label}</div>
-                </button>
-              ))}
+              {(isStaff
+                ? [['Åpne', openCount, 'open'], ['Nye', newCount, 'ny'], ['🔺 Eskalert', escalatedCount, 'eskalert']] as const
+                : [['Åpne', openCount, 'open'], ['Nye', newCount, 'ny'], ['Lukket', closedCount, 'closed']] as const
+              ).map(([label, count, f]) => {
+                const isEscalatedCard = f === 'eskalert';
+                const hasEscalations = isEscalatedCard && count > 0;
+                return (
+                  <button key={label} onClick={() => setFilter(filter === f ? 'alle' : f)}
+                    className={`rounded-lg p-2 text-center border transition-colors cursor-pointer
+                      ${filter === f
+                        ? (isEscalatedCard ? 'bg-orange-600 border-orange-600 text-white' : 'bg-[#003087] border-[#003087] text-white')
+                        : hasEscalations
+                          ? 'bg-orange-50 border-orange-300 hover:border-orange-500'
+                          : 'bg-white border-gray-200 hover:border-[#003087]/40'}`}>
+                    <div className={`text-[1.2rem] font-bold font-mono
+                      ${filter === f ? 'text-white' : hasEscalations ? 'text-orange-700' : 'text-[#003087]'}`}>{count}</div>
+                    <div className={`text-[10px] font-semibold uppercase tracking-wide
+                      ${filter === f ? 'text-white/80' : hasEscalations ? 'text-orange-700' : 'text-gray-400'}`}>{label}</div>
+                  </button>
+                );
+              })}
             </div>
             {/* Filter pills */}
             <div className="flex gap-1 flex-wrap">
-              {(['alle', 'ny', 'open', 'waiting', 'closed'] as const).map(f => (
+              {(['alle', 'ny', 'open', 'waiting', 'eskalert', 'closed'] as const).map(f => (
                 <button key={f} onClick={() => setFilter(f)}
                   className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border-[1.5px] cursor-pointer transition-colors
-                    ${filter === f ? 'bg-[#003087] border-[#003087] text-white' : 'bg-white border-gray-200 text-gray-500 hover:border-[#003087] hover:text-[#003087]'}`}>
-                  {f === 'alle' ? 'Alle' : STATUS_LABEL[f] ?? f}
+                    ${filter === f
+                      ? (f === 'eskalert' ? 'bg-orange-600 border-orange-600 text-white' : 'bg-[#003087] border-[#003087] text-white')
+                      : 'bg-white border-gray-200 text-gray-500 hover:border-[#003087] hover:text-[#003087]'}`}>
+                  {f === 'alle' ? 'Alle' : f === 'eskalert' ? '🔺 Eskalert' : STATUS_LABEL[f] ?? f}
                 </button>
               ))}
             </div>
@@ -441,10 +475,11 @@ export default function SaksbehandlingPage() {
               <div className="text-center py-10 text-gray-400 text-sm">Ingen saker her.</div>
             ) : (
               filteredCases.map(c => {
-                const isOverdue = c.sla_deadline && new Date(c.sla_deadline) < new Date() && c.status !== 'closed';
-                const isActive  = activeCase?.id === c.id;
-                const dupCount  = c.reg_nr ? (regNrMap.get(c.reg_nr.toUpperCase().replace(/\s/g, '')) ?? []).length : 0;
-                const showPrio  = c.priority === 'high' || c.priority === 'critical';
+                const isOverdue   = c.sla_deadline && new Date(c.sla_deadline) < new Date() && c.status !== 'closed';
+                const isActive    = activeCase?.id === c.id;
+                const dupCount    = c.reg_nr ? (regNrMap.get(c.reg_nr.toUpperCase().replace(/\s/g, '')) ?? []).length : 0;
+                const showPrio    = c.priority === 'high' || c.priority === 'critical';
+                const isEscalated = c.status === 'eskalert';
                 return (
                   <div key={c.id} onClick={() => openCase(c.id)}
                     className={`flex items-stretch mx-1.5 mb-0.5 rounded-lg cursor-pointer transition-colors overflow-hidden
@@ -468,10 +503,16 @@ export default function SaksbehandlingPage() {
                       </div>
                       {/* Row 3: tags */}
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
-                          style={{ background: `${STATUS_BORDER[c.status]}18`, color: STATUS_BORDER[c.status] }}>
-                          {STATUS_LABEL[c.status as CaseStatus] ?? c.status}
-                        </span>
+                        {isEscalated ? (
+                          <span className="text-[10px] font-bold text-white bg-orange-600 rounded px-1.5 py-0.5 tracking-wide">
+                            🔺 ESKALERT
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+                            style={{ background: `${STATUS_BORDER[c.status]}18`, color: STATUS_BORDER[c.status] }}>
+                            {STATUS_LABEL[c.status as CaseStatus] ?? c.status}
+                          </span>
+                        )}
                         {isOverdue && (
                           <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">SLA!</span>
                         )}
