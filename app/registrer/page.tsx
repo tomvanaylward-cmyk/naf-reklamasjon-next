@@ -3,19 +3,7 @@ import { useState } from 'react';
 import type React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-const SENTRE = [
-  'NAF Senter Oslo',
-  'NAF Senter Bergen',
-  'NAF Senter Trondheim',
-  'NAF Senter Stavanger',
-  'NAF Senter Kristiansand',
-  'NAF Senter Tromsø',
-  'NAF Senter Drammen',
-  'NAF Senter Fredrikstad',
-  'NAF Senter Ålesund',
-  'NAF Senter Bodø',
-];
+import { NAF_SENTRE } from '@/lib/sentre';
 
 export default function RegistrerPage() {
   const router = useRouter();
@@ -101,7 +89,7 @@ export default function RegistrerPage() {
               className="border-[1.5px] border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 bg-white text-gray-800"
             >
               <option value="">Velg ditt senter…</option>
-              {SENTRE.map(s => (
+              {NAF_SENTRE.map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>

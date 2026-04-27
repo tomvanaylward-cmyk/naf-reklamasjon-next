@@ -20,11 +20,10 @@ export default function Navbar({ userName, role, pendingCount = 0 }: NavbarProps
   }
 
   const links = [
-    { href: '/dashboard',      label: 'Dashboard',      roles: ['admin', 'saksbehandler', 'senterleder'] },
-    { href: '/saksbehandling', label: 'Saksbehandling', roles: ['admin', 'saksbehandler', 'senterleder'] },
-    { href: '/rapportering',   label: 'Rapportering',   roles: ['admin', 'saksbehandler'] },
-    { href: '/eksport',        label: 'Eksport',        roles: ['admin', 'saksbehandler'] },
-    { href: '/admin',          label: 'Adminpanel',     roles: ['admin'] },
+    { href: '/dashboard',      label: 'Dashboard',      roles: ['admin', 'overordnet', 'reklamasjonsansvarlig', 'senterleder'] },
+    { href: '/saksbehandling', label: 'Saksbehandling', roles: ['admin', 'overordnet', 'reklamasjonsansvarlig', 'senterleder'] },
+    { href: '/eksport',        label: 'Eksport',        roles: ['admin', 'overordnet', 'reklamasjonsansvarlig'] },
+    { href: '/admin',          label: 'Adminpanel',     roles: ['admin', 'overordnet'] },
   ].filter(l => l.roles.includes(role));
 
   return (
