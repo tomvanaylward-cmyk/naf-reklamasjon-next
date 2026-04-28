@@ -28,3 +28,29 @@ export async function requireAdmin(req: NextRequest): Promise<{ userId: string }
   if (!profile || (profile.role !== 'admin' && profile.role !== 'overordnet')) return null;
   return { userId: user.id };
 }
+
+/**
+ * Validates that the request Bearer token belongs to an authenticated user
+ * with a known role. Returns user id, role, and senter on success.
+ */
+export async function requireAuth(req: NextRequest): Promise<{
+  userId: string;
+  role:   string;
+  senter: string | null;
+} | null> {
+  const auth  = req.headers.get('Authorization') ?? '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) return null;
+
+  const { data: { user }, error } = await adminDb.auth.getUser(token);
+  if (error || !user) return null;
+
+  const { data: profile } = await adminDb
+    .from('profiles')
+    .select('role, senter')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile) return null;
+  return { userId: user.id, role: profile.role, senter: profile.senter };
+}

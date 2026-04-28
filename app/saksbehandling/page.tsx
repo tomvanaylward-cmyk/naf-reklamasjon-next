@@ -180,40 +180,55 @@ export default function SaksbehandlingPage() {
     if (transferTo === activeCase.senter) { setShowTransfer(false); return; }
     setTransferring(true);
     try {
-      const fromSenter = activeCase.senter || '–';
-      const toSenter   = transferTo;
-      const actor      = currentUser.full_name || currentUser.email;
-      const reason     = transferReason.trim();
-      const { error } = await db
-        .from('cases')
-        .update({ senter: toSenter, updated_at: new Date().toISOString() })
-        .eq('id', activeCase.id);
-      if (error) {
-        alert(`Kunne ikke flytte saken: ${error.message}`);
+      const toSenter = transferTo;
+      const reason   = transferReason.trim();
+
+      // Bruker service-role-endepunktet for å unngå RLS-hjørner ved senter-endring.
+      const { data: { session } } = await db.auth.getSession();
+      const token = session?.access_token;
+      if (!token) {
+        alert('Du må være innlogget for å flytte saken.');
         setTransferring(false);
         return;
       }
-      const auditMsg: Omit<Message, 'id'> = {
-        case_id: activeCase.id,
-        type: 'internal',
-        sender_name: '🔁 System',
-        content: reason
-          ? `Saken ble flyttet fra ${fromSenter} til ${toSenter} av ${actor}. Begrunnelse: ${reason}`
-          : `Saken ble flyttet fra ${fromSenter} til ${toSenter} av ${actor}.`,
-        created_at: new Date().toISOString(),
-      };
-      await db.from('messages').insert(auditMsg);
 
-      // Senterleder mister tilgang når senter endres → lukk saken og oppdater listen.
+      const res = await fetch('/api/case-transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          caseId:   activeCase.id,
+          toSenter,
+          reason,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(`Kunne ikke flytte saken: ${json.error || `HTTP ${res.status}`}`);
+        setTransferring(false);
+        return;
+      }
+
+      // Senterleder mister tilgang når senter endres → lukk saken og refresh listen.
       // Andre roller beholder tilgangen og fortsetter på saken.
       if (currentUser.role === 'senterleder') {
         setActiveCase(null);
         setMessages([]);
         await loadCases();
       } else {
-        setMessages(prev => [...prev, { ...auditMsg, id: crypto.randomUUID() }]);
-        setActiveCase(prev => prev ? { ...prev, senter: toSenter } : prev);
-        setAllCases(prev => prev.map(c => c.id === activeCase.id ? { ...c, senter: toSenter } : c));
+        // Refresh saken og meldingene fra DB så audit-meldingen kommer fram.
+        const [{ data: updatedCase }, { data: updatedMessages }] = await Promise.all([
+          db.from('cases').select('*').eq('id', activeCase.id).single(),
+          db.from('messages').select('*').eq('case_id', activeCase.id).order('created_at', { ascending: true }),
+        ]);
+        if (updatedCase) {
+          setActiveCase(updatedCase as Case);
+          setAllCases(prev => prev.map(c => c.id === activeCase.id ? (updatedCase as Case) : c));
+        }
+        if (updatedMessages) setMessages(updatedMessages as Message[]);
       }
       setShowTransfer(false);
       setTransferTo('');
