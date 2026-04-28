@@ -6,6 +6,7 @@ import { db, getCurrentUser, formatDate, STATUS_LABEL, PRIO_LABEL } from '@/lib/
 import { ML_SUGGESTIONS } from '@/lib/ml-suggestions';
 import type { Case, Message, Profile, CaseStatus, CasePriority, CaseOutcome, Attachment, Template } from '@/lib/types';
 import { uploadAttachmentAuthenticated, getSignedUrl, validateFile, formatFileSize, MAX_FILES } from '@/lib/attachments';
+import { NAF_SENTRE } from '@/lib/sentre';
 import Navbar from '@/components/Navbar';
 import InfoRow from '@/components/InfoRow';
 import Timeline from '@/components/Timeline';
@@ -56,6 +57,10 @@ export default function SaksbehandlingPage() {
   const [search, setSearch]             = useState('');
   const [templates, setTemplates]       = useState<Template[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showTransfer,    setShowTransfer]    = useState(false);
+  const [transferTo,      setTransferTo]      = useState('');
+  const [transferReason,  setTransferReason]  = useState('');
+  const [transferring,    setTransferring]    = useState(false);
   const tlRef = useRef<HTMLDivElement>(null);
 
   const statusFiltered = filter === 'alle' ? allCases : allCases.filter(c => c.status === filter);
@@ -168,6 +173,54 @@ export default function SaksbehandlingPage() {
     const act = parseFloat(costAct) || null;
     await db.from('cases').update({ cost_estimated: est, cost_actual: act }).eq('id', activeCase.id);
     setActiveCase(prev => prev ? { ...prev, cost_estimated: est, cost_actual: act } : prev);
+  }
+
+  async function transferCase() {
+    if (!activeCase || !currentUser || !transferTo) return;
+    if (transferTo === activeCase.senter) { setShowTransfer(false); return; }
+    setTransferring(true);
+    try {
+      const fromSenter = activeCase.senter || '–';
+      const toSenter   = transferTo;
+      const actor      = currentUser.full_name || currentUser.email;
+      const reason     = transferReason.trim();
+      const { error } = await db
+        .from('cases')
+        .update({ senter: toSenter, updated_at: new Date().toISOString() })
+        .eq('id', activeCase.id);
+      if (error) {
+        alert(`Kunne ikke flytte saken: ${error.message}`);
+        setTransferring(false);
+        return;
+      }
+      const auditMsg: Omit<Message, 'id'> = {
+        case_id: activeCase.id,
+        type: 'internal',
+        sender_name: '🔁 System',
+        content: reason
+          ? `Saken ble flyttet fra ${fromSenter} til ${toSenter} av ${actor}. Begrunnelse: ${reason}`
+          : `Saken ble flyttet fra ${fromSenter} til ${toSenter} av ${actor}.`,
+        created_at: new Date().toISOString(),
+      };
+      await db.from('messages').insert(auditMsg);
+
+      // Senterleder mister tilgang når senter endres → lukk saken og oppdater listen.
+      // Andre roller beholder tilgangen og fortsetter på saken.
+      if (currentUser.role === 'senterleder') {
+        setActiveCase(null);
+        setMessages([]);
+        await loadCases();
+      } else {
+        setMessages(prev => [...prev, { ...auditMsg, id: crypto.randomUUID() }]);
+        setActiveCase(prev => prev ? { ...prev, senter: toSenter } : prev);
+        setAllCases(prev => prev.map(c => c.id === activeCase.id ? { ...c, senter: toSenter } : c));
+      }
+      setShowTransfer(false);
+      setTransferTo('');
+      setTransferReason('');
+    } finally {
+      setTransferring(false);
+    }
   }
 
   async function assignCase(userId: string) {
@@ -690,7 +743,19 @@ export default function SaksbehandlingPage() {
                               </div>
                             </div>
                           )}
-                          <InfoRow label="Senter"     value={activeCase.senter} />
+                          <div className="flex justify-between items-center gap-3 py-1.5 border-b border-gray-100 text-[13px]">
+                            <span className="text-gray-400 text-[12px] shrink-0">Senter</span>
+                            <span className="flex items-center gap-2">
+                              <span className="text-gray-800 font-medium text-right">{activeCase.senter || '–'}</span>
+                              <button
+                                onClick={() => { setTransferTo(''); setTransferReason(''); setShowTransfer(true); }}
+                                className="text-[10.5px] font-semibold text-[#003087] border border-[#003087]/30 rounded-md px-2 py-0.5 hover:bg-[#003087] hover:text-white transition-colors cursor-pointer bg-transparent"
+                                title="Flytt sak til annet senter"
+                              >
+                                Flytt →
+                              </button>
+                            </span>
+                          </div>
                           <InfoRow label="Besøksdato" value={formatDate(activeCase.visit_date)} />
                           <InfoRow label="Ordrenr."   value={activeCase.order_number} />
                         </div>
@@ -897,6 +962,75 @@ export default function SaksbehandlingPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Flytt-sak-modal */}
+              {showTransfer && activeCase && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+                  onClick={() => !transferring && setShowTransfer(false)}
+                >
+                  <div
+                    className="bg-white rounded-xl shadow-2xl w-full max-w-md p-5"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <h2 className="text-base font-bold text-[#003087] mb-1">Flytt sak til annet senter</h2>
+                    <p className="text-[12px] text-gray-500 mb-4">
+                      Saken flyttes fra <span className="font-semibold text-gray-700">{activeCase.senter || '–'}</span>.
+                      Hendelsen logges automatisk på saken.
+                    </p>
+
+                    <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">Nytt senter</label>
+                    <select
+                      value={transferTo}
+                      onChange={e => setTransferTo(e.target.value)}
+                      disabled={transferring}
+                      className="w-full text-[13px] px-3 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 mb-4"
+                    >
+                      <option value="">— Velg senter —</option>
+                      {NAF_SENTRE.filter(s => s !== activeCase.senter).map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+
+                    <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">
+                      Begrunnelse <span className="text-gray-400 font-normal normal-case">(valgfritt)</span>
+                    </label>
+                    <textarea
+                      value={transferReason}
+                      onChange={e => setTransferReason(e.target.value)}
+                      disabled={transferring}
+                      placeholder="F.eks. «Kunden valgte feil senter ved registrering — service utført på Lillestrøm.»"
+                      rows={3}
+                      className="w-full text-[13px] px-3 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:border-[#003087] focus:ring-2 focus:ring-[#003087]/10 resize-none"
+                    />
+
+                    {currentUser?.role === 'senterleder' && (
+                      <div className="mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-[12px] text-amber-800">
+                          ⚠️ Du mister tilgang til denne saken etter flytting.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex justify-end gap-2 mt-5">
+                      <button
+                        onClick={() => setShowTransfer(false)}
+                        disabled={transferring}
+                        className="text-[12.5px] font-semibold text-gray-600 border border-gray-200 rounded-lg px-3.5 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer bg-transparent disabled:opacity-50"
+                      >
+                        Avbryt
+                      </button>
+                      <button
+                        onClick={transferCase}
+                        disabled={transferring || !transferTo}
+                        className="text-[12.5px] font-semibold text-white bg-[#003087] rounded-lg px-3.5 py-1.5 hover:bg-[#002060] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {transferring ? 'Flytter…' : 'Flytt sak'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Lightbox */}
               {lightboxUrl && (
