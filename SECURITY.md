@@ -1,7 +1,7 @@
 # Security Documentation
 
 **Application:** NAF Reklamasjonssystem  
-**Last updated:** 2026-04-23  
+**Last updated:** 2026-04-28  
 **Prepared for:** IT security review  
 
 This document describes the security posture of the NAF Reklamasjonssystem. A professional developer or IT security reviewer should be able to understand the full security model from this document without reading the source code.
@@ -65,6 +65,18 @@ Three roles are defined in the `profiles.role` column:
 ### Row-Level Security (RLS)
 All database tables have RLS enabled. Supabase enforces access at the database layer — application bugs cannot expose data from other centres.
 
+The policies enforce role- and centre-aware access:
+
+| Table | SELECT | UPDATE |
+|---|---|---|
+| `cases` | Staff (admin/overordnet/reklamasjonsansvarlig): all rows. Senterleder: only rows where `cases.senter = profiles.senter`. | Same as SELECT for read access; `WITH CHECK true` so a senterleder may move a case out of their own centre via the in-app "Flytt"-action (the move is logged as an internal system message). |
+| `messages` | Staff: all rows. Senterleder: only messages whose parent case belongs to their centre. | Insert allowed for any authenticated user (the public reply portal uses the service-role client and bypasses RLS). |
+| `attachments` | Staff: all rows. Senterleder: only attachments whose parent case belongs to their centre. | Insert allowed where `uploader_id = auth.uid()`. |
+| `pending_registrations` | Admin and overordnet only. | n/a |
+| `profiles` | All authenticated users (needed to populate assignee dropdowns). | A user may update their own profile; admin and overordnet may update any. |
+
+Public flows (anonymous complaint submission, customer reply via reply-token) use the Supabase service-role client server-side, which bypasses RLS. The token itself gates access for the customer flow (see Public portal access below).
+
 ### Public portal access
 The customer reply portal (`/svar/[case_id]`) requires no login. Access is controlled by a `reply_token` — a UUID (122 bits of entropy) stored on each case. The token is:
 - Included in outbound agent email as a URL parameter
@@ -91,6 +103,8 @@ The customer reply portal (`/svar/[case_id]`) requires no login. Access is contr
 | **Internal notes hidden from customers** | `app/svar/[case_id]/page.tsx`, message queries | `type = 'internal'` messages are explicitly excluded from all customer-facing queries |
 | **Auth middleware** | `proxy.ts` | All routes under `/saksbehandling`, `/admin`, `/eksport` redirect to login if no valid session |
 | **HTTPS enforced** | Vercel platform + `upgrade-insecure-requests` CSP directive | All traffic encrypted in transit |
+| **Centre-aware RLS** | `cases_select`, `cases_update`, `messages_select` policies | Senterleder cannot read or modify cases or messages outside their own centre, even via direct REST calls with their JWT |
+| **Audit log on case transfers** | `transferCase` in `app/saksbehandling/page.tsx` | Moving a case to another centre writes an internal system message recording the actor, source, destination, and reason |
 
 ---
 
@@ -103,7 +117,7 @@ The customer reply portal (`/svar/[case_id]`) requires no login. Access is contr
 | CSP uses `unsafe-eval` for scripts | Low | Required by Supabase Realtime (uses `new Function` internally). Will be removed if Supabase Realtime removes this requirement |
 | No WAF (Web Application Firewall) | Low | Vercel's platform provides DDoS protection. A WAF (e.g. Cloudflare) is a future enhancement |
 | Rate limiting fails open | Accepted | If Upstash is unavailable, requests are allowed through. Availability prioritised over hard blocking for a complaint tool |
-| No audit log | Medium | Changes to cases (status updates, assignments) are not logged to a separate audit trail. Planned as a future enhancement |
+| Partial audit log | Low | Case transfers (centre changes) and assignments are logged as internal system messages on the case timeline. Status, priority, and field-level edits are not yet logged to a separate audit trail. Planned as a future enhancement |
 
 ---
 
