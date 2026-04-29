@@ -51,7 +51,7 @@ export default function DashboardPage() {
       const since = new Date(Date.now() - period * 86400000).toISOString();
       const [{ data: caseData }, { data: agentData }] = await Promise.all([
         db.from('cases').select('*').gte('created_at', since).order('created_at', { ascending: false }),
-        db.from('profiles').select('id, email, full_name, role').eq('role', 'agent'),
+        db.from('profiles').select('id, email, full_name, role').in('role', ['reklamasjonsansvarlig', 'overordnet', 'admin']),
       ]);
       setCases((caseData as Case[]) || []);
       setAgents((agentData as Profile[]) || []);

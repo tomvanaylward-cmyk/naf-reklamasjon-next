@@ -15,9 +15,12 @@ function nafHeader(subtitle: string) {
     </div>`;
 }
 
-/** Notify all admins that a new registration is pending */
+/** Notify all admin and overordnet users that a new registration is pending */
 export async function sendRegistrationNotify(applicantName: string, applicantEmail: string, senter: string) {
-  const { data: admins } = await adminDb.from('profiles').select('email').eq('role', 'admin');
+  const { data: admins } = await adminDb
+    .from('profiles')
+    .select('email')
+    .in('role', ['admin', 'overordnet']);
   const recipients = (admins || []).map((a: { email: string }) => a.email).filter(Boolean);
   if (recipients.length === 0) return;
 

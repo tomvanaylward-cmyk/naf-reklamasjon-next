@@ -98,7 +98,7 @@ export default function Timeline({ activeCase: c, messages, attachments, similar
                      : isInternal  ? 'bg-amber-50 border-yellow-200'
                      :                'bg-emerald-50 border-emerald-200';
         const dotColor = isCustomer ? 'blue' : isInternal ? 'amber' : 'green';
-        const lbl      = isCustomer ? '← Kunde' : isInternal ? '🔒 Internt' : '→ Saksbehandler';
+        const lbl      = isCustomer ? '← Kunde' : isInternal ? '🔒 Internt' : '→ NAF';
         const lblCls   = isCustomer ? 'bg-blue-100 text-blue-700'
                        : isInternal ? 'bg-amber-50 text-amber-800'
                        :               'bg-emerald-50 text-emerald-800';

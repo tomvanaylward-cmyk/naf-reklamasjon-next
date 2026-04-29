@@ -265,8 +265,8 @@ export default function SaksbehandlingPage() {
       case_id: activeCase.id,
       type: isEmail ? 'agent' : 'internal',
       sender_name: isEmail
-        ? (currentUser.full_name || 'Saksbehandler')
-        : `🔒 ${currentUser.full_name || 'Saksbehandler'}`,
+        ? (currentUser.full_name || 'NAF Reklamasjonsansvarlig')
+        : `🔒 ${currentUser.full_name || 'NAF Reklamasjonsansvarlig'}`,
       content,
       created_at: new Date().toISOString(),
     };
@@ -283,7 +283,7 @@ export default function SaksbehandlingPage() {
             ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
           },
           body: JSON.stringify({ type: 'agent_reply', to: activeCase.customer_email,
-            caseId: activeCase.case_id, replyContent: content, fromName: currentUser.full_name || 'NAF Saksbehandler' }),
+            caseId: activeCase.case_id, replyContent: content, fromName: currentUser.full_name || 'NAF Reklamasjonsansvarlig' }),
         }).catch(() => {/* email errors are non-blocking */});
       });
     }
