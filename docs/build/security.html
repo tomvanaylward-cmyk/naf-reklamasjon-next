@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Security Documentation — NAF Reklamasjonssystem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+    @top-left {
+      content: "Confidential · Internal use";
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+    @bottom-left {
+      content: "NAF Reklamasjonssystem · Security Documentation";
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+  }
+
+  @page :first {
+    margin: 0;
+    @top-left { content: none; }
+    @bottom-right { content: none; }
+    @bottom-left { content: none; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* COVER ---------------------------------------------------------------- */
+  .cover {
+    page-break-after: always;
+    page-break-inside: avoid;
+    height: 297mm;
+    width: 210mm;
+    background: #003087;
+    color: #ffffff;
+    position: relative;
+    padding: 28mm 22mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 90mm;
+    height: 90mm;
+    background: #FFB81C;
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+  }
+  .cover-top { position: relative; z-index: 1; }
+  .cover-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 9pt;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #FFB81C;
+    margin-bottom: 8mm;
+  }
+  .cover-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 38pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 6mm;
+  }
+  .cover-subtitle {
+    font-size: 14pt;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    max-width: 130mm;
+    line-height: 1.45;
+  }
+  .cover-bottom {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    padding-top: 8mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 9.5pt;
+  }
+  .cover-meta-label {
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 2mm;
+  }
+  .cover-meta-value {
+    font-weight: 500;
+  }
+  .cover-naf {
+    background: #E3000F;
+    color: white;
+    font-weight: 800;
+    font-size: 11pt;
+    padding: 3px 9px;
+    border-radius: 3px;
+    display: inline-block;
+    letter-spacing: 0.05em;
+  }
+
+  /* CONTENT -------------------------------------------------------------- */
+  .content { padding: 0; }
+
+  h1 {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #003087;
+    margin-top: 12mm;
+    margin-bottom: 5mm;
+    page-break-after: avoid;
+    border-bottom: 2px solid #003087;
+    padding-bottom: 3mm;
+  }
+  h1:first-of-type { margin-top: 0; }
+  h2 {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #003087;
+    margin-top: 8mm;
+    margin-bottom: 3mm;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: #1e293b;
+    margin-top: 5mm;
+    margin-bottom: 2mm;
+    page-break-after: avoid;
+  }
+
+  p { margin-bottom: 3mm; }
+  ul { margin: 3mm 0 3mm 6mm; }
+  li { margin-bottom: 1.5mm; }
+
+  strong { font-weight: 600; color: #0f172a; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5pt;
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 2px;
+    color: #475569;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+    line-height: 1.45;
+    padding: 4mm 5mm;
+    border-radius: 3px;
+    margin: 3mm 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    page-break-inside: avoid;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 5mm 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #f1f5f9;
+    font-weight: 600;
+    color: #0f172a;
+    text-align: left;
+    padding: 2mm 3mm;
+    border-bottom: 2px solid #cbd5e1;
+    font-size: 8.5pt;
+    letter-spacing: 0.02em;
+  }
+  td {
+    padding: 2mm 3mm;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+    line-height: 1.45;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code {
+    font-size: 7.5pt;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 6mm 0;
+  }
+
+  .meta-block {
+    background: #f8fafc;
+    border-left: 3px solid #003087;
+    padding: 4mm 5mm;
+    margin: 5mm 0 8mm 0;
+    font-size: 9.5pt;
+  }
+  .meta-block strong { color: #003087; }
+
+  .preface {
+    font-style: italic;
+    color: #475569;
+    margin: 5mm 0 8mm 0;
+    font-size: 10pt;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-eyebrow">Security review</div>
+    <h1 class="cover-title">Security<br>Documentation</h1>
+    <div class="cover-subtitle">NAF Reklamasjonssystem — security posture, controls, and known limitations prepared for IT security review.</div>
+  </div>
+  <div class="cover-bottom">
+    <div>
+      <div class="cover-meta-label">Application</div>
+      <div class="cover-meta-value">NAF Reklamasjonssystem</div>
+    </div>
+    <div>
+      <div class="cover-meta-label">Last updated</div>
+      <div class="cover-meta-value">29 April 2026</div>
+    </div>
+    <div class="cover-naf">NAF</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<div class="meta-block">
+  <strong>Application:</strong> NAF Reklamasjonssystem<br>
+  <strong>Last updated:</strong> 2026-04-29<br>
+  <strong>Prepared for:</strong> IT security review
+</div>
+
+<p class="preface">This document describes the security posture of the NAF Reklamasjonssystem. A professional developer or IT security reviewer should be able to understand the full security model from this document without reading the source code.</p>
+
+<h1>1. Overview</h1>
+<p>The NAF Reklamasjonssystem is an internal case management tool for handling customer complaints at NAF centres. It has two audiences:</p>
+<ul>
+  <li><strong>Internal staff</strong> (reklamasjonsansvarlig, senterleder, overordnet, admin): log in to view, manage, and respond to cases</li>
+  <li><strong>Customers</strong> (public): submit complaints via <code>/ny-reklamasjon</code>, and reply to agent emails via a token-protected portal at <code>/svar/[case_id]</code></li>
+</ul>
+<p>The application is hosted on Vercel (<code>naf-reklamasjon-next.vercel.app</code>) and uses Supabase for database, authentication, and file storage.</p>
+
+<h1>2. Data Inventory</h1>
+<table>
+<thead><tr><th>Data type</th><th>Where stored</th><th>Who can access</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Customer name, email, phone</td><td>Supabase PostgreSQL (eu-north-1)</td><td>Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin</td><td>RLS enforced</td></tr>
+<tr><td>Complaint description and details</td><td>Supabase PostgreSQL (eu-north-1)</td><td>Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin</td><td>RLS enforced</td></tr>
+<tr><td>Case messages (agent replies, customer replies)</td><td>Supabase PostgreSQL (eu-north-1)</td><td>Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin</td><td>Internal notes never shown to customers</td></tr>
+<tr><td>File attachments (photos, PDFs)</td><td>Supabase Storage (eu-north-1)</td><td>Reklamasjonsansvarlig, senterleder (own centre), overordnet, admin</td><td>Signed 60-minute download URLs; never publicly accessible</td></tr>
+<tr><td>Session tokens</td><td>Supabase Auth — httpOnly cookies</td><td>Browser only</td><td>JWTs; expire per Supabase default</td></tr>
+<tr><td>Reply tokens</td><td>Supabase PostgreSQL — <code>cases.reply_token</code></td><td>Server-side only</td><td>UUID (122-bit entropy); never logged</td></tr>
+<tr><td>Email content</td><td>SendGrid (transient)</td><td>Not stored by SendGrid after delivery</td><td>Transactional only</td></tr>
+<tr><td>Rate limit counters</td><td>Upstash Redis (EU-West-1, Ireland)</td><td>Server-side only</td><td>IP-based keys, no PII stored</td></tr>
+</tbody>
+</table>
+
+<h1>3. Third-Party Vendors</h1>
+<table>
+<thead><tr><th>Vendor</th><th>Role</th><th>Data processed</th><th>Region</th></tr></thead>
+<tbody>
+<tr><td><strong>Supabase</strong></td><td>Database, auth, file storage</td><td>All customer PII and case data</td><td>eu-north-1 (Stockholm, Sweden)</td></tr>
+<tr><td><strong>Vercel</strong></td><td>Application hosting, serverless functions</td><td>Request/response data; env vars (encrypted at rest)</td><td>Global CDN; functions in closest region</td></tr>
+<tr><td><strong>SendGrid</strong></td><td>Transactional email delivery</td><td>Customer email addresses, email body content</td><td>Global; transient only</td></tr>
+<tr><td><strong>Upstash</strong></td><td>Rate limiting counter store</td><td>IP addresses (as rate limit keys, no PII)</td><td>EU-West-1 (Ireland)</td></tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> DPA (Data Processing Agreement) status with each vendor should be confirmed with NAF's legal/compliance team before production launch.</p>
+
+<h1>4. Authentication &amp; Authorisation</h1>
+
+<h2>Authentication</h2>
+<p>Supabase Auth handles all authentication. Users log in with email + password. Sessions are stored as httpOnly cookies (not accessible to JavaScript), refreshed automatically by the Supabase SSR client.</p>
+
+<h2>Role hierarchy</h2>
+<p>Four roles are defined in the <code>profiles.role</code> column:</p>
+<table>
+<thead><tr><th>Role</th><th>Access</th></tr></thead>
+<tbody>
+<tr><td><code>admin</code></td><td>Everything, including user management</td></tr>
+<tr><td><code>overordnet</code></td><td>Everything, including user management (same as admin)</td></tr>
+<tr><td><code>reklamasjonsansvarlig</code></td><td>All cases across all centres; cannot manage users</td></tr>
+<tr><td><code>senterleder</code></td><td>Only own centre's cases (RLS-enforced)</td></tr>
+</tbody>
+</table>
+
+<h2>Row-Level Security (RLS)</h2>
+<p>All database tables have RLS enabled. Supabase enforces access at the database layer — application bugs cannot expose data from other centres.</p>
+<p>The policies enforce role- and centre-aware access:</p>
+<table>
+<thead><tr><th>Table</th><th>SELECT</th><th>UPDATE</th></tr></thead>
+<tbody>
+<tr><td><code>cases</code></td><td>Staff (admin/overordnet/reklamasjonsansvarlig): all rows. Senterleder: only rows where <code>cases.senter = profiles.senter</code>.</td><td>Same as SELECT for read access; <code>WITH CHECK</code> permits a senterleder to move a case out of their own centre via the in-app "Flytt"-action (the move is logged as an internal system message).</td></tr>
+<tr><td><code>messages</code></td><td>Staff: all rows. Senterleder: only messages whose parent case belongs to their centre.</td><td>Insert allowed for any authenticated user (the public reply portal uses the service-role client and bypasses RLS).</td></tr>
+<tr><td><code>attachments</code></td><td>Staff: all rows. Senterleder: only attachments whose parent case belongs to their centre.</td><td>Insert allowed where <code>uploader_id = auth.uid()</code>.</td></tr>
+<tr><td><code>pending_registrations</code></td><td>Admin and overordnet only.</td><td>n/a</td></tr>
+<tr><td><code>profiles</code></td><td>All authenticated users (needed to populate assignee dropdowns).</td><td>A user may update their own profile; admin and overordnet may update any.</td></tr>
+</tbody>
+</table>
+<p>Public flows (anonymous complaint submission, customer reply via reply-token) use the Supabase service-role client server-side, which bypasses RLS. The token itself gates access for the customer flow (see Public portal access below).</p>
+
+<h2>Public portal access</h2>
+<p>The customer reply portal (<code>/svar/[case_id]</code>) requires no login. Access is controlled by a <code>reply_token</code> — a UUID (122 bits of entropy) stored on each case. The token is:</p>
+<ul>
+  <li>Included in outbound agent email as a URL parameter</li>
+  <li>Validated server-side on every request using <code>crypto.timingSafeEqual</code> (prevents timing attacks)</li>
+  <li>Never rotated after use (customers may reply multiple times from the same email link)</li>
+  <li>Validated with the same error message whether the case doesn't exist or the token is wrong (prevents case enumeration)</li>
+</ul>
+
+<h1>5. Security Controls</h1>
+<table>
+<thead><tr><th>Control</th><th>Where</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><strong>Security headers</strong></td><td><code>next.config.ts</code></td><td>CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, COOP, CORP, Permissions-Policy on all responses</td></tr>
+<tr><td><strong>Content Security Policy</strong></td><td><code>next.config.ts</code></td><td>Restricts which scripts, styles, connections the browser will allow; prevents XSS data exfiltration</td></tr>
+<tr><td><strong>Rate limiting</strong></td><td><code>proxy.ts</code> middleware</td><td>Prevents abuse of unauthenticated endpoints; 5 req/10min on reply API, 3 req/hour on complaint submission</td></tr>
+<tr><td><strong>Distributed rate limit store</strong></td><td>Upstash Redis (EU)</td><td>In-memory counters don't work across Vercel's serverless instances; Redis ensures limits are globally enforced</td></tr>
+<tr><td><strong>UUID reply tokens</strong></td><td><code>cases.reply_token</code></td><td>122-bit entropy token gates customer portal access; not guessable</td></tr>
+<tr><td><strong>Timing-safe token comparison</strong></td><td><code>app/api/customer-reply/route.ts</code>, <code>app/api/attachments/upload/route.ts</code></td><td><code>crypto.timingSafeEqual</code> prevents timing side-channel attacks on token validation</td></tr>
+<tr><td><strong>Token guard on file uploads</strong></td><td><code>app/api/attachments/upload/route.ts</code></td><td>Portal file uploads require valid reply_token; prevents arbitrary file uploads</td></tr>
+<tr><td><strong>Input validation</strong></td><td>All API routes</td><td>Content length enforced (5,000 chars max for messages), file type (JPG/PNG/PDF only), file size (10 MB max)</td></tr>
+<tr><td><strong>HTML escaping</strong></td><td><code>app/api/send-email/route.ts</code></td><td>All customer-provided content is HTML-escaped before inclusion in emails</td></tr>
+<tr><td><strong>Service-role client server-only</strong></td><td><code>lib/admin-api.ts</code></td><td><code>adminDb</code> (Supabase service role key) is only imported in server-side code; never bundled to the browser</td></tr>
+<tr><td><strong>Internal notes hidden from customers</strong></td><td><code>app/svar/[case_id]/page.tsx</code>, message queries</td><td><code>type = 'internal'</code> messages are explicitly excluded from all customer-facing queries</td></tr>
+<tr><td><strong>Auth middleware</strong></td><td><code>proxy.ts</code></td><td>All routes under <code>/saksbehandling</code>, <code>/admin</code>, <code>/eksport</code> redirect to login if no valid session</td></tr>
+<tr><td><strong>HTTPS enforced</strong></td><td>Vercel platform + <code>upgrade-insecure-requests</code> CSP directive</td><td>All traffic encrypted in transit</td></tr>
+<tr><td><strong>Centre-aware RLS</strong></td><td><code>cases_select</code>, <code>cases_update</code>, <code>messages_select</code> policies</td><td>Senterleder cannot read or modify cases or messages outside their own centre, even via direct REST calls with their JWT</td></tr>
+<tr><td><strong>Audit log on case transfers</strong></td><td><code>transferCase</code> in <code>app/saksbehandling/page.tsx</code></td><td>Moving a case to another centre writes an internal system message recording the actor, source, destination, and reason</td></tr>
+<tr><td><strong>Centre value enforced at column level</strong></td><td><code>cases_senter_valid</code> CHECK constraint on <code>cases.senter</code></td><td>The senter column may only contain one of the 44 canonical NAF centre names (or NULL). Enforced by PostgreSQL regardless of which client writes — defends against direct REST writes attempting to set arbitrary or empty senter values</td></tr>
+<tr><td><strong>Service-role audited transfer endpoint</strong></td><td><code>app/api/case-transfer/route.ts</code></td><td>Centre transfers go through a server-side endpoint that validates role, ownership (senterleder may only transfer cases from own centre), and writes the audit message in the same call</td></tr>
+</tbody>
+</table>
+
+<h1>6. Known Limitations</h1>
+<table>
+<thead><tr><th>Limitation</th><th>Severity</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Hosted on <code>vercel.app</code> (not a NAF-controlled domain)</td><td>Low</td><td>Custom domain (<code>reklamasjon.naf.no</code> or similar) is planned post-review</td></tr>
+<tr><td>CSP uses <code>unsafe-inline</code> for scripts</td><td>Low</td><td>Required by Next.js hydration. Nonce-based CSP is the future enhancement; current CSP still blocks all external script injection</td></tr>
+<tr><td>CSP uses <code>unsafe-eval</code> for scripts</td><td>Low</td><td>Required by Supabase Realtime (uses <code>new Function</code> internally). Will be removed if Supabase Realtime removes this requirement</td></tr>
+<tr><td>No WAF (Web Application Firewall)</td><td>Low</td><td>Vercel's platform provides DDoS protection. A WAF (e.g. Cloudflare) is a future enhancement</td></tr>
+<tr><td>Rate limiting fails open</td><td>Accepted</td><td>If Upstash is unavailable, requests are allowed through. Availability prioritised over hard blocking for a complaint tool</td></tr>
+<tr><td>Partial audit log</td><td>Low</td><td>Case transfers (centre changes) and assignments are logged as internal system messages on the case timeline. Status, priority, and field-level edits are not yet logged to a separate audit trail. Planned as a future enhancement</td></tr>
+</tbody>
+</table>
+
+<h1>7. Dependency Audit</h1>
+<p><strong>Last run:</strong> 2026-04-23</p>
+<pre>uuid  &lt;14.0.0
+Severity: moderate
+Missing buffer bounds check in v3/v5/v6 when buf is provided
+GHSA-w5hq-g745-h8pq
+
+Transitive via exceljs. 2 moderate severity vulnerabilities total.</pre>
+
+<h2>Resolved vulnerabilities</h2>
+<table>
+<thead><tr><th>Package</th><th>Advisory</th><th>Severity</th><th>Resolution</th></tr></thead>
+<tbody>
+<tr><td><code>xlsx</code></td><td>GHSA-4r6h-8v6p-xvw6 (Prototype Pollution), GHSA-5pgg-2g8v-p4x9 (ReDoS)</td><td>HIGH</td><td>Replaced with <code>exceljs</code></td></tr>
+</tbody>
+</table>
+
+<h2>Accepted vulnerabilities</h2>
+<table>
+<thead><tr><th>Package</th><th>Advisory</th><th>Severity</th><th>Reason accepted</th></tr></thead>
+<tbody>
+<tr><td><code>uuid</code> (via exceljs)</td><td>GHSA-w5hq-g745-h8pq</td><td>Moderate</td><td>Transitive dependency; not directly reachable from user input. Fixing requires downgrading exceljs to a breaking version. Monitored for upstream fix.</td></tr>
+</tbody>
+</table>
+
+<h1>8. Reporting a Vulnerability</h1>
+<p>See <code>/.well-known/security.txt</code> for contact information. Please report security vulnerabilities by email. Do not open a public GitHub issue for security findings.</p>
+
+</div>
+</body>
+</html>
