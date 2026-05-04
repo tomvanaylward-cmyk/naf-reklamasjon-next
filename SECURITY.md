@@ -1,7 +1,7 @@
 # Security Documentation
 
 **Application:** NAF Reklamasjonssystem  
-**Last updated:** 2026-04-28  
+**Last updated:** 2026-04-29  
 **Prepared for:** IT security review  
 
 This document describes the security posture of the NAF Reklamasjonssystem. A professional developer or IT security reviewer should be able to understand the full security model from this document without reading the source code.
@@ -53,7 +53,7 @@ The application is hosted on Vercel (`naf-reklamasjon-next.vercel.app`) and uses
 Supabase Auth handles all authentication. Users log in with email + password. Sessions are stored as httpOnly cookies (not accessible to JavaScript), refreshed automatically by the Supabase SSR client.
 
 ### Role hierarchy
-Three roles are defined in the `profiles.role` column:
+Four roles are defined in the `profiles.role` column:
 
 | Role | Access |
 |---|---|
@@ -105,6 +105,8 @@ The customer reply portal (`/svar/[case_id]`) requires no login. Access is contr
 | **HTTPS enforced** | Vercel platform + `upgrade-insecure-requests` CSP directive | All traffic encrypted in transit |
 | **Centre-aware RLS** | `cases_select`, `cases_update`, `messages_select` policies | Senterleder cannot read or modify cases or messages outside their own centre, even via direct REST calls with their JWT |
 | **Audit log on case transfers** | `transferCase` in `app/saksbehandling/page.tsx` | Moving a case to another centre writes an internal system message recording the actor, source, destination, and reason |
+| **Centre value enforced at column level** | `cases_senter_valid` CHECK constraint on `cases.senter` | The senter column may only contain one of the 44 canonical NAF centre names (or NULL). Enforced by PostgreSQL regardless of which client writes — defends against direct REST writes attempting to set arbitrary or empty senter values |
+| **Service-role audited transfer endpoint** | `app/api/case-transfer/route.ts` | Centre transfers go through a server-side endpoint that validates role, ownership (senterleder may only transfer cases from own centre), and writes the audit message in the same call |
 
 ---
 
