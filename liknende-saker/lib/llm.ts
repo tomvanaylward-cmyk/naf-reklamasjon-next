@@ -1,10 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Lazy singleton — SDK-konstruktøren kaster hvis nøkkelen mangler, og
+// modulnivå-konstruksjon knekker `next build` i miljøer uten nøkkel
+// (samme mønster som getClient() i embeddings.ts).
+let client: Anthropic | null = null;
+function getClient(): Anthropic {
+  if (!client) {
+    client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return client;
+}
 const MODEL = 'claude-haiku-4-5-20251001';
 
 async function ask(prompt: string): Promise<string> {
-  const res = await client.messages.create({
+  const res = await getClient().messages.create({
     model: MODEL,
     max_tokens: 64,
     messages: [{ role: 'user', content: prompt }],
