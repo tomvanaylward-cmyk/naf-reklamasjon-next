@@ -9,6 +9,7 @@ export interface CorpusCase {
   tid_til_lukking_dager: number | null;
   tema: string;
   beskrivelse_anonymisert: string;
+  losning_anonymisert: string | null;
   kostnad: number | null;
   kostnad_kilde: KostnadKilde | null;
   embedding: number[];
