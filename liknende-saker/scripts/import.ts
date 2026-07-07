@@ -21,12 +21,11 @@ const KOL = {
   lukket: 'Dato lukket',
 } as const;
 
-// 'Grunnlag for lukking' er et supplerende felt som er dokumentert som til
-// stede i noen eksporter (161/287 i den opprinnelige kartleggingen), men
-// IKKE til stede som kolonne i data/kilde.xlsx slik den faktisk foreligger
-// her (verifisert: kolonnen mangler helt fra arket). Behandles derfor som
-// valgfri — hentes hvis kolonnen finnes, hoppes stille over hvis ikke —
-// heller enn en hard, påkrevd kolonne i KOL/kolonnedrift-sjekken under.
+// 'Grunnlag for lukking' finnes i arket, men er sparsomt utfylt (161/287).
+// NB: uten `defval` i sheet_to_json utelates nøkler for tomme celler per rad,
+// så en sparsom kolonne kan mangle fra akkurat rad 0 selv om den finnes i
+// arket. Behandles derfor som valgfritt supplement utenfor den harde
+// kolonnedrift-sjekken, i tilfelle fremtidige eksporter dropper den helt.
 const KOL_LOSNING_SUPPLEMENT = 'Grunnlag for lukking';
 
 function parseNorskDato(s: unknown): Date | null {
@@ -47,7 +46,11 @@ function parseNorskKostnad(v: unknown): number | null {
 
 async function main() {
   const wb = XLSX.readFile('data/kilde.xlsx');
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]], { range: 1 });
+  // `defval: ''` sikrer at ALLE header-nøkler finnes på hver rad — uten den
+  // utelater sheet_to_json nøkler for tomme celler, og kolonnedrift-sjekken
+  // under ville feilaktig slå ut på sparsomme kolonner (f.eks. 'Dato lukket'
+  // hvis rad 0 er en åpen sak).
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]], { range: 1, defval: '' });
 
   const manglende = Object.values(KOL).filter((k) => !(k in (rows[0] ?? {})));
   if (manglende.length > 0) {
