@@ -16,6 +16,9 @@ export async function hentKostnad(
   if (kostnadsfelt && kostnadsfelt > 0) return { kostnad: kostnadsfelt, kilde: 'felt' };
   const regex = belopFraTekst(beskrivelse);
   if (regex !== null) return { kostnad: regex, kilde: 'tekst' };
+  // LLM-fallback kun når nøkkel er konfigurert — uten den kjører
+  // pipelinen helt lokalt og saker uten regex-treff får kostnad null.
+  if (!process.env.ANTHROPIC_API_KEY) return { kostnad: null, kilde: null };
   const llm = await llmExtract(beskrivelse);
   return llm !== null ? { kostnad: llm, kilde: 'llm' } : { kostnad: null, kilde: null };
 }

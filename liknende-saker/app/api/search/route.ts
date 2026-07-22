@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       { status: 503 }
     );
   }
-  const queryVec = await embed(tekst);
+  const queryVec = await embed(tekst, 'query');
   const treff = søk(alleSaker, queryVec, {
     senter: senter || undefined,
     alvorlighet: (alvorlighet as Alvorlighet) || undefined,
