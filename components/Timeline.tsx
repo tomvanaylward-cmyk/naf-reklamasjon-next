@@ -1,6 +1,6 @@
 'use client';
 import type React from 'react';
-import { formatDateTime, formatDate } from '@/lib/supabase';
+import { formatDateTime } from '@/lib/supabase';
 import { ML_SUGGESTIONS } from '@/lib/ml-suggestions';
 import type { Case, Message, Attachment } from '@/lib/types';
 import { formatFileSize } from '@/lib/attachments';
@@ -9,12 +9,11 @@ interface TimelineProps {
   activeCase:        Case;
   messages:          Message[];
   attachments:       Attachment[];
-  similarCases:      Case[];
   onUseML:           (text: string) => void;
   onOpenAttachment:  (a: Attachment) => void;
 }
 
-export default function Timeline({ activeCase: c, messages, attachments, similarCases, onUseML, onOpenAttachment }: TimelineProps) {
+export default function Timeline({ activeCase: c, messages, attachments, onUseML, onOpenAttachment }: TimelineProps) {
   const mlText = ML_SUGGESTIONS[c.category];
   const today  = new Date().toDateString();
   let todayInserted = false;
@@ -44,15 +43,6 @@ export default function Timeline({ activeCase: c, messages, attachments, similar
         <TimelineItem dot="amber" label="✦ ML-analyse" labelCls="bg-amber-50 text-amber-800" time="">
           <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-yellow-300 rounded-lg px-3.5 py-3">
             <p className="text-[13px] text-amber-900 leading-relaxed mb-2">{mlText}</p>
-            {similarCases.length > 0 && (
-              <div className="flex flex-col gap-1 mb-2">
-                {similarCases.map(s => (
-                  <div key={s.id} className="text-[11.5px] text-amber-800 bg-white border border-yellow-200 rounded px-2.5 py-1 font-mono">
-                    {s.case_id} · {s.customer_name} · {formatDate(s.created_at)}
-                  </div>
-                ))}
-              </div>
-            )}
             <button onClick={() => onUseML(mlText)}
               className="text-[12px] font-semibold text-amber-600 border-[1.5px] border-yellow-300 rounded-lg px-3 py-1 hover:bg-yellow-200 transition-colors cursor-pointer bg-transparent">
               Bruk dette svaret →
