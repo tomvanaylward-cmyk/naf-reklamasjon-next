@@ -1,0 +1,287 @@
+<!doctype html><html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Klyngeanalyse — NAF reklamasjoner</title>
+<style>
+:root{--blå:#003087;--grå:#6b7280;--kant:#e5e7eb;--bg:#f8f9fc;--varsel:#b45309}
+*{box-sizing:border-box}
+body{font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;margin:0;background:var(--bg);color:#111827}
+main{max-width:880px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:28px;margin:0 0 4px;color:var(--blå)}
+h2{font-size:19px;margin:36px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--kant)}
+h3{font-size:16px;margin:0;font-weight:650}
+.undertittel{color:var(--grå);margin:0 0 28px;font-size:14px}
+.kort{background:#fff;border:1px solid var(--kant);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.sammendrag{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:8px}
+.sammendrag div{background:#fff;border:1px solid var(--kant);border-radius:12px;padding:14px 16px}
+.sammendrag b{display:block;font-size:22px;color:var(--blå)}
+.sammendrag span{font-size:12.5px;color:var(--grå)}
+.klynge{background:#fff;border:1px solid var(--kant);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.klynge-topp{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.nr{display:inline-block;background:var(--blå);color:#fff;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;font-size:13px;margin-right:6px}
+.andel{font-size:12.5px;color:var(--grå);white-space:nowrap}
+.tall{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-bottom:10px}
+.tall div{background:var(--bg);border-radius:8px;padding:9px 11px}
+.tall b{display:block;font-size:17px}
+.tall span{font-size:11.5px;color:var(--grå);line-height:1.35;display:block}
+.tall .varsel b{color:var(--varsel)}
+.spenn{margin:4px 0;font-size:14px}
+.grå{color:var(--grå)}.liten{font-size:13px}
+.varsel-tekst{color:var(--varsel)}
+details{margin-top:10px;border-top:1px solid var(--kant);padding-top:10px}
+summary{cursor:pointer;font-size:13.5px;color:var(--blå);font-weight:600}
+.eksempler,.losninger{font-size:13px;color:#374151;padding-left:18px;margin:8px 0}
+.eksempler li,.losninger li{margin-bottom:6px}
+.losninger{color:#065f46}
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--kant)}
+th{background:var(--bg);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--grå)}
+.advarsel{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.advarsel h2{border:0;margin-top:0;color:var(--varsel);font-size:17px}
+ul.punkter{margin:8px 0;padding-left:20px}ul.punkter li{margin-bottom:7px;font-size:14.5px}
+footer{margin-top:40px;font-size:12.5px;color:var(--grå);border-top:1px solid var(--kant);padding-top:14px}
+@media(prefers-color-scheme:dark){
+:root{--bg:#111827;--kant:#374151;--grå:#9ca3af;--blå:#93b4ff}
+body{background:#0b1220;color:#e5e7eb}
+.kort,.klynge,.sammendrag div,table{background:#161f30}
+.tall div{background:#0f1725}
+.eksempler,.losninger{color:#cbd5e1}.losninger{color:#6ee7b7}
+th{background:#0f1725}
+.advarsel{background:#2a1f06;border-color:#78500a}
+}
+</style></head><body><main>
+<h1>Klyngeanalyse av reklamasjoner</h1>
+<p class="undertittel">287 saker · 22.12.2025–23.06.2026 · gruppert automatisk i 8 tema · all analyse kjørt lokalt, ingen data sendt ut</p>
+
+<div class="sammendrag">
+  <div><b>287</b><span>saker analysert</span></div>
+  <div><b>30 dager</b><span>median ledetid (245 lukket)</span></div>
+  <div><b>983 075 kr</b><span>registrert kostnad</span></div>
+  <div><b>95 av 287</b><span>saker har beløp</span></div>
+</div>
+
+<h2>Hovedfunn</h2>
+<div class="kort">
+<ul class="punkter">
+<li><b>Kostnadene er konsentrert:</b> de tre største gruppene står for 80 % av registrert kostnad. Tiltak mot disse tre treffer mest.</li>
+<li><b>Samme problem, ulik pris:</b> 4 av 8 grupper har mer enn 5× forskjell mellom billigste og dyreste sak. Det er ikke naturlig variasjon — det er ulik praksis mellom sentre.</li>
+<li><b>Problemene er organisasjonsbrede:</b> de store gruppene berører 14–31 sentre hver. Ingen av dem er lokale særtilfeller, så felles retningslinjer vil ha bred effekt.</li>
+<li><b>Ledetiden varierer sterkt:</b> median 30 dager totalt, men enkeltsaker opp mot 138 dager. Gruppene med lengst ledetid er de samme som har høyest kostnad.</li>
+</ul>
+</div>
+
+<div class="advarsel">
+<h2>Om datagrunnlaget — les dette før tallene brukes</h2>
+<ul class="punkter">
+<li><b>Bare 95 av 287 saker har et kostnadsbeløp</b> (77 fra kostnadsfeltet, 19 lest ut av fritekst). Reell totalkostnad er derfor <em>høyere</em> enn 983 075 kr — vi vet bare ikke hvor mye.</li>
+<li><b>126 av 287 saker mangler beskrivelse av hvordan de ble løst</b> — feltet inneholder bare «Ja» eller tilsvarende. Kun 93 saker har brukbar løsningstekst. Dette er hovedhindringen for å dele løsninger på tvers.</li>
+<li><b>Gruppenavnene er nøkkelord</b>, ikke tolkning — maskinen viser hvilke ord som skiller gruppen fra resten. En språkmodell kan gi dem ordentlige navn og sammendrag.</li>
+<li><b>Tidligere feil, nå rettet:</b> systemet leste ordrenummer som kronebeløp og viste 11,2 mill. i kostnader. Riktig tall er 983 075 kr. Tallene i denne rapporten er kontrollert.</li>
+</ul>
+</div>
+
+<h2>Gruppene, sortert etter kostnad</h2>
+
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">1</span> post · sender · kundeservice · mottatt · siden</h3>
+      <span class="andel">39 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>72</b><span>saker</span></div>
+      <div><b>23</b><span>sentre involvert</span></div>
+      <div><b>27 d</b><span>median ledetid (maks 105)</span></div>
+      <div><b>386 781 kr</b><span>registrert kostnad</span></div>
+      <div><b>5 000 kr</b><span>median per sak</span></div>
+      <div class="varsel"><b>132×</b><span>kostnadsspredning</span></div>
+    </div>
+    <p class="spenn">Spenn: 750 kr – 99 007 kr <span class="grå">(30 av 72 saker har beløp)</span></p>
+    <p class="grå liten">Mest berørte sentre: Oslo (10), Stavanger Kvadrat (9), Drammen (9)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>Hei Spør om pris på skifte av bremser framme og oljeskift gearkasse på en Ford ranger 2019 modell . Dette er hos NAF kvadrat . Etter 6 uker og tre purringer får jeg svar i dag at de ikke har…</li><li>Kunde: Auksjonen Hei! Vi har mottatt en reklamasjon fra kjøper på bil [REGNR] (VIN WDF44760313437984), objekt 534248, og trenger litt hjelp til å avklare funnene i NAF-rapporten opp mot et s…</li><li>Kunde: Per [NAVN] Kunde belastet 851kr for å skifte en 5w pære på en Toyota Yaris. Ønsker grunnlag til hvorfor dette ikke ble gjort ved første kontroll, og at han måtte inn for en ny time.…</li><li>Medlem [NAVN], [TLF] sender inn klage på en Eierskiftetest utført 21.01.26 kl 0700-0845 på [REGNR]. Denne klagen kom inn som et vedlegg derfor ligger det også her som et vedlegg…</li>
+      </ul>
+      <p class="liten"><b>Dokumenterte løsninger (35 av 72):</b></p>
+      <ul class="losninger"><li>Ja — Kunde refundert for test med feil. 02.02.2026…</li><li>Ja — Penger er overført kunde 25.02.2026…</li><li>Ja — [NAVN] ringte snakket med kunde 09.02.26 Gitt 50% på resterende punkter som skulle vært utført. Kunde har fått tilbudet digitalt, og skal finne time som passer.…</li></ul>
+    </details>
+  </section>
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">2</span> ayvens · årsak · regnummer · markert · sprekk</h3>
+      <span class="andel">28 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>37</b><span>saker</span></div>
+      <div><b>14</b><span>sentre involvert</span></div>
+      <div><b>31 d</b><span>median ledetid (maks 78)</span></div>
+      <div><b>270 409 kr</b><span>registrert kostnad</span></div>
+      <div><b>6 000 kr</b><span>median per sak</span></div>
+      <div class="varsel"><b>80×</b><span>kostnadsspredning</span></div>
+    </div>
+    <p class="spenn">Spenn: 1 091 kr – 87 000 kr <span class="grå">(25 av 37 saker har beløp)</span></p>
+    <p class="grå liten">Mest berørte sentre: Hellerudsletta (20), Berger (2), Sem (2)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>Kunde klager på at list på bakluke er skadet. Ikke mulig å se om dette er tilfelle på BBT, men mest trolig var den der.…</li><li>Kundeklage på sprekk i hovedlykt som ikke er notert opp i NAF test. Vi kompenserer for tilsvarende brukt lykt, da det ikke er noe å finne til lands.…</li><li>Regnummer: [REGNR] Kunde: Auksjonen Sprekk i frontrute. Usikkert om dette var til stede ved test, men var der ved henting.…</li><li>Kunde BCA Regnummer: [REGNR] Årsak til klage: Ratt ute av midtstilling.…</li>
+      </ul>
+      <p class="liten"><b>Dokumenterte løsninger (9 av 37):</b></p>
+      <ul class="losninger"><li>Ja — Delt kostnad på 3000kr 50-50 med auksjonen…</li><li>Ja — Dette var i utgangspunktet ingen safir sak, Kunde er svart ut…</li><li>Ja — Ferdigbehandlet og erstattet ovenfor oppdragsgiver.…</li></ul>
+    </details>
+  </section>
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">3</span> refunderer · avtalt · avklart · batteriet · fast</h3>
+      <span class="andel">13 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>88</b><span>saker</span></div>
+      <div><b>31</b><span>sentre involvert</span></div>
+      <div><b>0 d</b><span>median ledetid (maks 138)</span></div>
+      <div><b>128 576 kr</b><span>registrert kostnad</span></div>
+      <div><b>5 329 kr</b><span>median per sak</span></div>
+      <div class="varsel"><b>51×</b><span>kostnadsspredning</span></div>
+    </div>
+    <p class="spenn">Spenn: 320 kr – 16 300 kr <span class="grå">(20 av 88 saker har beløp)</span></p>
+    <p class="grå liten">Mest berørte sentre: Oslo (19), Berger (7), Stavanger Kvadrat (6)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>Kunde var her på PKK. Fikk mangel på de vanlige foringene bak. Tesla sjekker bilen, men mener at det ikke er mangel. Frem til vi får avklart dette med SVV (denne mangelen er det en diskusjon…</li><li>Torsdag kveld begynte jeg plutselig å høre dunkelyder fra bilen mens jeg kjørte. Fredag kjørte jeg til jobb, og lydene ble både tydeligere og hyppigere – spesielt når jeg svingte. Jeg forstå…</li><li>Kunden ringer inn til oss og varsler at senteret ikke har skiftet frostvæske etter serviceintervall og blitt anbefalt å ta dette hos merkeverksted. Han har riktig nok ikke betalt for frostvæ…</li><li>Hei, [REGNR] var nylig på service hos en av deres verksteder. Det ble oppdaget oljelekkasje fra bunnplugg etter dette. Se vedlegg og utlegg vi har hatt med dette. Håper på positivt svar og e…</li>
+      </ul>
+      <p class="liten"><b>Dokumenterte løsninger (33 av 88):</b></p>
+      <ul class="losninger"><li>Ja — Returnerer 1845 til kunde. Skjema sendt regnskap. Kan lukkes…</li><li>Ja — Jeg har ingen mail og svare på. Bilen er kjøpt av Ayvens som har hatt test ved innlevering. Svettingen er notert på test og burde vært reklamert på da. Service ble u…</li><li>Ja — Skjønner ikke denne i det hele tatt…</li></ul>
+    </details>
+  </section>
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">4</span> nettbil</h3>
+      <span class="andel">12 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>20</b><span>saker</span></div>
+      <div><b>12</b><span>sentre involvert</span></div>
+      <div><b>15 d</b><span>median ledetid (maks 115)</span></div>
+      <div><b>113 848 kr</b><span>registrert kostnad</span></div>
+      <div><b>3 275 kr</b><span>median per sak</span></div>
+      <div class="varsel"><b>90×</b><span>kostnadsspredning</span></div>
+    </div>
+    <p class="spenn">Spenn: 1 000 kr – 90 000 kr <span class="grå">(7 av 20 saker har beløp)</span></p>
+    <p class="grå liten">Mest berørte sentre: Økern (4), Hellerudsletta (2), Oslo (2)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>[TLF] [NAVN] Misfornøyd med produkt/diagnose…</li><li>Deffekt frontlampe og kamera.…</li><li>Bytte av lamdasonde på [REGNR]…</li><li>Kunde BCA Årsak til klage: Slakk i rattaksel.…</li>
+      </ul>
+      <p class="liten"><b>Dokumenterte løsninger (4 av 20):</b></p>
+      <ul class="losninger"><li>Ja — Ingen reklamasjon... Kunde hadde bestilt skifte av lambda, og hadde del selv. Når vi tar inn bil så ser vi at eksos er modifisert. Vi sjekker sonde, og feilen er nok…</li><li>Ja — Har kontaktet kunde , men får ikke svar.…</li><li>Ja — Denne saken er håndtert.…</li></ul>
+    </details>
+  </section>
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">5</span> enige · kompensasjon · kompenserer · belastes · næring</h3>
+      <span class="andel">6 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>61</b><span>saker</span></div>
+      <div><b>16</b><span>sentre involvert</span></div>
+      <div><b>39 d</b><span>median ledetid (maks 87)</span></div>
+      <div><b>62 232 kr</b><span>registrert kostnad</span></div>
+      <div><b>4 590 kr</b><span>median per sak</span></div>
+      <div class=""><b>4×</b><span>kostnadsspredning</span></div>
+    </div>
+    <p class="spenn">Spenn: 2 250 kr – 10 000 kr <span class="grå">(12 av 61 saker har beløp)</span></p>
+    <p class="grå liten">Mest berørte sentre: Berger (26), Stavanger Forus (9), Sem (4)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>[REGNR] Rustskader som ikke er oppdaget på 3stk dører Blitt enige om en kompensajon på 10.000.-…</li><li>Sprukket baklampe, ikke avdekket på test kost 3865.-…</li><li>Oversett skade i venstre bakdør Blitt enige om en kompensasjon på 10.000…</li><li>Det er avdekket hull og skader på to av sommerdekkene. Ikke anmerket i takst Vi kompenserer 4000.-…</li>
+      </ul>
+      <p class="liten"><b>Dokumenterte løsninger (10 av 61):</b></p>
+      <ul class="losninger"><li>Ja — Kunde har fått tilbakebetalt det kunde og jeg ble enig om.…</li><li>Ja — Ikke behov for videre tiltak…</li><li>Ja — Saken er avsluttet og tester vil bli fulgt opp kvalitetsmessig.…</li></ul>
+    </details>
+  </section>
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">6</span> (ingen tydelige nøkkelord)</h3>
+      <span class="andel">2 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>5</b><span>saker</span></div>
+      <div><b>3</b><span>sentre involvert</span></div>
+      <div><b>32 d</b><span>median ledetid (maks 53)</span></div>
+      <div><b>21 229 kr</b><span>registrert kostnad</span></div>
+      <div><b>21 229 kr</b><span>median per sak</span></div>
+      <div class=""><b>–</b><span>kostnadsspredning</span></div>
+    </div>
+    
+    <p class="grå liten">Mest berørte sentre: Berger (3), Narvik (1), Oslo (1)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>2012 SKODA ROOMSTER 1,2 TSI 86HK STYLE GT Store rustskader i vognbunn som ikke er opplyst i taksten Vi kompenserer 7200.-…</li><li>TOYOTA PROACE CITY ELECTRIC oversett/feilvurdert bremser og en skade på panser vi giren kompensasjon på 6000.-…</li><li>Kunde skiftet komplett registerreimsett hos oss 14.02.2025 på 94622km og kom inn 04.05.2026 til annet verksted for kontroll av ulyd register. Dette ble da demontert og der ble funnet løs str…</li><li>2012 TOYOTA LAND CRUISER .Som vi tar tilbake for nytt salg på Autoringen En del avvik som ikke er opplyst ved takst.…</li>
+      </ul>
+      <p class="liten varsel-tekst">Ingen av sakene i denne gruppen har dokumentert hvordan de ble løst.</p>
+    </details>
+  </section>
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">7</span> (ingen tydelige nøkkelord)</h3>
+      <span class="andel">0 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>3</b><span>saker</span></div>
+      <div><b>3</b><span>sentre involvert</span></div>
+      <div><b>45 d</b><span>median ledetid (maks 82)</span></div>
+      <div><b>0 kr</b><span>registrert kostnad</span></div>
+      <div><b>–</b><span>median per sak</span></div>
+      <div class=""><b>–</b><span>kostnadsspredning</span></div>
+    </div>
+    
+    <p class="grå liten">Mest berørte sentre: Tromsø (1), Hvam (1), Mobilt NAF-senter (1)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>CAS-2906324-H0V2Q4…</li><li>Klage: Saksnr: CAS-2960847-B2H9Q1…</li><li>[REGNR] [NAVN] sak: CAS-2827426-D2Q7C2…</li>
+      </ul>
+      <p class="liten"><b>Dokumenterte løsninger (2 av 3):</b></p>
+      <ul class="losninger"><li>Ja — Saken er sendt videre til forbrukrerådet…</li><li>Ja — Anser dette som en informasjon fra kunde, ikke behov for tilbakemelding…</li></ul>
+    </details>
+  </section>
+  <section class="klynge">
+    <div class="klynge-topp">
+      <h3><span class="nr">8</span> (ingen tydelige nøkkelord)</h3>
+      <span class="andel">0 % av kostnadene</span>
+    </div>
+    <div class="tall">
+      <div><b>1</b><span>saker</span></div>
+      <div><b>1</b><span>sentre involvert</span></div>
+      <div><b>0 d</b><span>median ledetid (maks 0)</span></div>
+      <div><b>0 kr</b><span>registrert kostnad</span></div>
+      <div><b>–</b><span>median per sak</span></div>
+      <div class=""><b>–</b><span>kostnadsspredning</span></div>
+    </div>
+    
+    <p class="grå liten">Mest berørte sentre: Hellerudsletta (1)</p>
+    <details>
+      <summary>Se eksempler og løsninger</summary>
+      <ul class="eksempler">
+        <li>Test…</li>
+      </ul>
+      <p class="liten varsel-tekst">Ingen av sakene i denne gruppen har dokumentert hvordan de ble løst.</p>
+    </details>
+  </section>
+
+<h2>Hva dette betyr for målene</h2>
+<table>
+<tr><th>Mål</th><th>Hva analysen viser</th><th>Neste steg</th></tr>
+<tr><td><b>Like beslutninger</b></td><td>Opptil 132× prisforskjell på samme problemtype mellom sentre</td><td>Felles kompensasjonsramme per gruppe</td></tr>
+<tr><td><b>Kortere ledetid</b></td><td>Median 30 dager; de dyreste gruppene er også de tregeste</td><td>Standardsvar for de tre største gruppene</td></tr>
+<tr><td><b>Lavere kostnad</b></td><td>80 % av kostnaden ligger i tre grupper</td><td>Årsaksarbeid mot disse tre, ikke spredt innsats</td></tr>
+</table>
+
+<footer>
+Generert lokalt fra anonymisert eksport (287 saker). Gruppering: spherical k-means på flerspråklige embeddinger, 8 grupper.
+Ingen personopplysninger i grunnlaget — navn, e-post, telefon og registreringsnummer er fjernet før analyse. Ingen data er sendt til eksterne tjenester.
+</footer>
+</main></body></html>

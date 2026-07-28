@@ -12,6 +12,7 @@ import InfoRow from '@/components/InfoRow';
 import Timeline from '@/components/Timeline';
 import SLABox from '@/components/SLABox';
 import SLATicker from '@/components/SLATicker';
+import LiknendeSaker from '@/components/LiknendeSaker';
 
 const PRIO_COLORS: Record<string, string> = {
   high: '#EF4444', critical: '#7C2D12', normal: '#9CA3AF', low: '#10B981'
@@ -165,6 +166,19 @@ export default function SaksbehandlingPage() {
     await db.from('cases').update({ [field]: value, updated_at: new Date().toISOString() }).eq('id', activeCase.id);
     setActiveCase(prev => prev ? { ...prev, [field]: value } : prev);
     setAllCases(prev => prev.map(c => c.id === activeCase.id ? { ...c, [field]: value } : c));
+
+    // Sak lukket → legg den (anonymisert) i kunnskapsbasen. Fire-and-forget:
+    // feiler dette skal lukkingen ikke påvirkes (API-et logger feilen på saken).
+    if (field === 'status' && value === 'closed') {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) {
+        fetch('/api/kunnskapsbase/innlemme', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ caseId: activeCase.id }),
+        }).catch(() => {});
+      }
+    }
   }
 
   async function saveCost() {
@@ -439,9 +453,6 @@ export default function SaksbehandlingPage() {
   const closedCount   = allCases.filter(c => c.status === 'closed').length;
   const escalatedCount = allCases.filter(c => c.status === 'eskalert').length;
   const isStaff = currentUser?.role === 'admin' || currentUser?.role === 'overordnet' || currentUser?.role === 'reklamasjonsansvarlig';
-  const similarCases = activeCase
-    ? allCases.filter(x => x.id !== activeCase.id && x.category === activeCase.category && x.status === 'closed').slice(0, 3)
-    : [];
 
   // Map normalized reg_nr → all cases with that plate (for duplicate detection)
   const regNrMap = useMemo(() => {
@@ -688,10 +699,12 @@ export default function SaksbehandlingPage() {
                     activeCase={activeCase}
                     messages={messages}
                     attachments={attachments}
-                    similarCases={similarCases}
                     onUseML={useMLSuggestion}
                     onOpenAttachment={openAttachment}
                   />
+                  <div className="mt-4">
+                    <LiknendeSaker caseId={activeCase.id} />
+                  </div>
                 </div>
 
                 {/* Right panel — tabbed */}
